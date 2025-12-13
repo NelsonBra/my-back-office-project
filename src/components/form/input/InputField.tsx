@@ -1,9 +1,12 @@
 import React, { FC } from "react";
+import Label from "../Label";
 
 interface InputProps {
   type?: "text" | "number" | "email" | "password" | "date" | "time" | string;
   id?: string;
   name?: string;
+  label?: string;
+  value?: string;
   placeholder?: string;
   defaultValue?: string | number;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -21,6 +24,8 @@ const Input: FC<InputProps> = ({
   type = "text",
   id,
   name,
+  label,
+  value,
   placeholder,
   defaultValue,
   onChange,
@@ -49,12 +54,14 @@ const Input: FC<InputProps> = ({
 
   return (
     <div className="relative">
+      {label && <Label htmlFor={id}>{label}</Label>}
       <input
         type={type}
         id={id}
+
         name={name}
         placeholder={placeholder}
-        defaultValue={defaultValue}
+        value={value}
         onChange={onChange}
         min={min}
         max={max}
@@ -66,13 +73,12 @@ const Input: FC<InputProps> = ({
       {/* Optional Hint Text */}
       {hint && (
         <p
-          className={`mt-1.5 text-xs ${
-            error
+          className={`mt-1.5 text-xs ${error
               ? "text-error-500"
               : success
-              ? "text-success-500"
-              : "text-gray-500"
-          }`}
+                ? "text-success-500"
+                : "text-gray-500"
+            }`}
         >
           {hint}
         </p>
