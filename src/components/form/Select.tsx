@@ -2,8 +2,8 @@ import React from "react";
 import Label from "./Label";
 
 interface SelectProps {
-  options: { value: string; label: string }[];
-  value?: string;
+  options: { value: string | number; label: string }[];
+  value?: string | number;
   placeholder?: string;
   id?: string;
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
@@ -14,7 +14,7 @@ interface SelectProps {
 
 const Select: React.FC<SelectProps> = ({
   options,
-  placeholder = "Selecione um aluno",
+  placeholder = "Selecione ",
   onChange,
   className = "",
   name = "",

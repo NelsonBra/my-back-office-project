@@ -10,6 +10,8 @@ import { toast } from "react-toastify";
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+  const [academicYear, setAcademicYear] = useState("");
+
 
 
 
@@ -22,7 +24,8 @@ export default function SignUpForm() {
       nome: `${formData.get("fname")} ${formData.get("lname")}`,
       email: formData.get("email"),
       password: formData.get("password"),
-      type_user: "aluno"
+      type_user: "aluno",
+      academic_year: Number(academicYear),
     };
 
     try {
@@ -42,11 +45,11 @@ export default function SignUpForm() {
         return;
       }
 
-      
-       toast.success("Usuário criado com sucesso! ID: " + result.userId);
+
+      toast.success("Usuário criado com sucesso! ID: " + result.userId);
     } catch (error) {
       console.error(error);
-     toast.error("Erro de conexão");
+      toast.error("Erro de conexão");
     }
   };
   return (
@@ -187,6 +190,28 @@ export default function SignUpForm() {
                       )}
                     </span>
                   </div>
+
+                  <div>
+                    <Label>
+                      Ano Académico<span className="text-error-500">*</span>
+                    </Label>
+
+                    <select
+                      name="academic_year"
+                      value={academicYear}
+                      onChange={(e) => setAcademicYear(e.target.value)}
+                      required
+                      className="w-full px-3 py-2 text-sm border rounded-lg outline-none border-gray-300 focus:ring-2 focus:ring-brand-500"
+                    >
+                      <option value="">Selecione o ano académico</option>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="5">5</option>
+                    </select>
+                  </div>
+
                 </div>
 
                 <div>

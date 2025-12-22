@@ -5,67 +5,86 @@ import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
+import { Person } from "@/types";
 
-export default function UserInfoCard() {
+type Props = {
+  data?: Person;
+};
+
+export default function UserInfoCard({ data }: Props) {
   const { isOpen, openModal, closeModal } = useModal();
   const handleSave = () => {
     // Handle save logic here
     console.log("Saving changes...");
     closeModal();
   };
+
+  if (!data) {
+    return (
+      <div className="p-5 border rounded-2xl">
+        <p className="text-sm text-gray-500">Loading personal information...</p>
+      </div>
+    );
+  }
+
+  const [firstName, ...rest] = data.nome.split(" ");
+  const lastName = rest.join(" ");
   return (
     <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
-            Personal Information
-          </h4>
-
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+        <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                First Name
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Musharof
-              </p>
+              <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
+               Informação pessoal
+              </h4>
+
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+             
+                <div>
+                  <p className="mb-2 text-xs text-gray-500">Nome</p>
+                  <p className="text-sm font-medium">{firstName || "—"}</p>
+                </div>
+
+              
+                <div>
+                  <p className="mb-2 text-xs text-gray-500">Sobrenome</p>
+                  <p className="text-sm font-medium">{lastName || "—"}</p>
+                </div>
+
+              
+                <div>
+                  <p className="mb-2 text-xs text-gray-500">Email </p>
+                  <p className="text-sm font-medium">{data.email ?? "—"}</p>
+                </div>
+
+           
+                <div>
+                  <p className="mb-2 text-xs text-gray-500">Telefone</p>
+                  <p className="text-sm font-medium">{data.telemovel ?? "—"}</p>
+                </div>
+
+              
+                <div>
+                  <p className="mb-2 text-xs text-gray-500">BI</p>
+                  <p className="text-sm font-medium">{data.nif ?? "—"}</p>
+                </div>
+                <div>
+                  <p className="mb-2 text-xs text-gray-500">Morada</p>
+                  <p className="text-sm font-medium">{data.morada ?? "—"}</p>
+                </div>
+                <div>
+                  <p className="mb-2 text-xs text-gray-500">Ano Acadêmico</p>
+                  <p className="text-sm font-medium"> {data?.user?.academic_year ?? "—"}</p>
+                </div>
+                <div>
+                  <p className="mb-2 text-xs text-gray-500">Curso</p>
+                  <p className="text-sm font-medium"> {data?.course_name ?? "—"}</p>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Last Name
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Chowdhury
-              </p>
-            </div>
-
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Email address
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                randomuser@pimjo.com
-              </p>
-            </div>
-
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Phone
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                +09 363 398 46
-              </p>
-            </div>
-
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Bio
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Team Manager
-              </p>
-            </div>
+         
           </div>
         </div>
 
