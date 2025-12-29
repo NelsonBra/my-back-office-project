@@ -6,7 +6,7 @@ interface InputProps {
   id?: string;
   name?: string;
   label?: string;
-  value?: string;
+  value?: string | number;
   placeholder?: string;
   defaultValue?: string | number;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import Badge from "../ui/badge/Badge";
 import { EyeCloseIcon } from "@/icons";
-import {  PaymentMethod, PaymentStatus,  } from "@/enum";
+import { PaymentMethod, PaymentStatus, } from "@/enum";
 import { ApiPayment, FeeType, TablePayment } from "@/types";
 
 
@@ -72,8 +72,9 @@ export default function PaymentsTable() {
                 );
 
                 if (!resPayments.ok) throw new Error("Failed to fetch payments");
+                const data = await resPayments.json();
 
-                const paymentsData: ApiPayment[] = await resPayments.json();
+                const paymentsData: ApiPayment[] = data.payments;
 
                 const mappedPayments: TablePayment[] = paymentsData.map((p) => ({
                     id: p.payment_id,
@@ -133,14 +134,24 @@ export default function PaymentsTable() {
 
                 if (!res.ok) throw new Error("Failed to fetch students");
                 const data = await res.json();
-                setStudents(data);
+
+                // Extract the data array and map to the shape you need
+                const studentsArray = data.data.map((s: any) => ({
+                    id: s.id,
+                    nome: s.nome,
+                }));
+
+                setStudents(studentsArray);
             } catch (err) {
                 console.error(err);
+                setStudents([]); 
             }
         };
 
         fetchStudents();
     }, []);
+
+
 
 
 

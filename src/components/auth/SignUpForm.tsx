@@ -3,15 +3,26 @@ import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
+import { AcademicYear } from "@/types";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const [academicYear, setAcademicYear] = useState("");
+  const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
 
+
+  useEffect(() => {
+    fetch("http://localhost:3000/academic-years")
+      .then(res => res.json())
+      .then(data => {
+        setAcademicYears(data.data);
+      })
+      .catch(err => console.error(err));
+  }, []);
 
 
 
@@ -204,13 +215,15 @@ export default function SignUpForm() {
                       className="w-full px-3 py-2 text-sm border rounded-lg outline-none border-gray-300 focus:ring-2 focus:ring-brand-500"
                     >
                       <option value="">Selecione o ano académico</option>
-                      <option value="1">1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="4">4</option>
-                      <option value="5">5</option>
+
+                      {academicYears.map(year => (
+                        <option key={year.id} value={year.id}>
+                          {year.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
+
 
                 </div>
 

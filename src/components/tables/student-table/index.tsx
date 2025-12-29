@@ -25,25 +25,33 @@ export default function StudentTable() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchStudents() {
+    const fetchStudents = async () => {
+      setLoading(true);
       try {
-        const res = await fetch("http://localhost:3000/students");
+        const token = localStorage.getItem("token");
+        const res = await fetch("http://localhost:3000/students", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-        if (!res.ok) {
-          throw new Error("Failed to fetch students");
-        }
+        if (!res.ok) throw new Error("Failed to fetch students");
+        const data = await res.json();
 
-        const data: Student[] = await res.json();
-        setStudents(data);
-      } catch (err) {
-        setError("Error loading students");
+        setStudents(data.data);
+        setError(null);
+      } catch (err: any) {
+        console.error(err);
+        setError(err.message || "Something went wrong");
+        setStudents([]);
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     fetchStudents();
   }, []);
+
+
+
 
   if (loading) {
     return <p className="text-gray-500 px-5 py-4">Loading students...</p>;

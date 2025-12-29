@@ -23,15 +23,15 @@ export default function Ecommerce() {
       </div>
 
       <div className="col-span-12 xl:col-span-5">
-        <MonthlyTarget />
+        {/* <MonthlyTarget /> */}
       </div>
 
       <div className="col-span-12">
-        <StatisticsChart />
+        {/* <StatisticsChart /> */}
       </div>
 
       <div className="col-span-12 xl:col-span-5">
-        <DemographicCard />
+        {/* <DemographicCard /> */}
       </div>
 
       <div className="col-span-12 xl:col-span-7">

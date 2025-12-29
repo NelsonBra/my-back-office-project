@@ -95,6 +95,8 @@ export type Person = {
   data_nascimento?: string | null;
   role?: string;
   course_name?: string;
+  course_id?: string;
+  academic_year: number;
 
   user?: {
     id: number;
@@ -106,3 +108,32 @@ export type Person = {
 export type ProfileProps = {
   data: Person;
 };
+
+export type StudentFormData = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  nif: string;
+  morada: string;
+  academicYear: string | number;
+  courseName: string;
+  courseId: string;
+};
+
+export type AcademicYear = {
+  id: number;
+  name: string;
+};
+
+export interface DateRangeFilterProps {
+  startDate: string;
+  endDate: string;
+  onStartDateChange: (value: string) => void;
+  onEndDateChange: (value: string) => void;
+  onApply: () => void;
+}
+
+
+
+
