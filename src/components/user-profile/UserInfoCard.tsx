@@ -1,71 +1,211 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
+import { AcademicYear, Course, Person, StudentFormData, } from "@/types";
+import { toast } from "react-toastify";
 
-export default function UserInfoCard() {
+type Props = {
+  data?: Person;
+};
+
+export default function UserInfoCard({ data }: Props) {
   const { isOpen, openModal, closeModal } = useModal();
-  const handleSave = () => {
-    // Handle save logic here
-    console.log("Saving changes...");
-    closeModal();
+  const [courses, setCourses] = useState<Course[]>([]);
+  // const [academicYear, setAcademicYear] = useState("");
+  const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
+
+  const [formData, setFormData] = useState<StudentFormData>({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    nif: "",
+    morada: "",
+    academicYear: "",
+    courseId: "",
+    courseName: "",
+  });
+
+
+
+
+
+  useEffect(() => {
+    fetch("http://localhost:3000/academic-years")
+      .then(res => res.json())
+      .then(data => {
+        setAcademicYears(data.data);
+      })
+      .catch(err => console.error(err));
+  }, []);
+
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/courses");
+        const data = await res.json();
+        setCourses(data);
+      } catch (err) {
+        console.error("Failed to load courses", err);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
+
+
+
+  useEffect(() => {
+    if (isOpen && data) {
+      const [firstName, ...rest] = data.nome.split(" ");
+
+      setFormData({
+        firstName,
+        lastName: rest.join(" "),
+        email: data.email ?? "",
+        phone: data.telemovel ?? "",
+        nif: data.nif ?? "",
+        morada: data.morada ?? "",
+        academicYear: data?.academic_year?.toString() ?? "",
+        courseId: data?.course_id?.toString() ?? "",
+        courseName: data?.course_name ?? "",
+      });
+    }
+  }, [isOpen, data]);
+
+
+
+
+  const handleSave = async () => {
+    try {
+      const payload = {
+        nome: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        telemovel: formData.phone,
+        nif: formData.nif,
+        morada: formData.morada,
+        academic_year: formData.academicYear
+          ? Number(formData.academicYear)
+          : null,
+
+        course_id: Number(formData.courseId),
+      };
+
+
+      const res = await fetch(`http://localhost:3000/students/${data?.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to update student");
+      }
+
+
+      toast.success("Estudante atualizado com sucesso!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+
+      // Close modal after a delay (matches toast duration)
+      // setTimeout(() => {
+      //   closeModal();
+      // }, 3000);
+
+    } catch (err) {
+      console.error(err);
+      toast.success("Erro ao atualizar estudante");
+    }
   };
+
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+
+
+  if (!data) {
+    return (
+      <div className="p-5 border rounded-2xl">
+        <p className="text-sm text-gray-500">Loading personal information...</p>
+      </div>
+    );
+  }
+
+  const [firstName, ...rest] = data.nome.split(" ");
+  const lastName = rest.join(" ");
   return (
     <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
-            Personal Information
-          </h4>
-
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+        <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                First Name
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Musharof
-              </p>
+              <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
+                Informação pessoal
+              </h4>
+
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+
+                <div>
+                  <p className="mb-2 text-xs text-gray-500">Nome</p>
+                  <p className="text-sm font-medium">{firstName || "—"}</p>
+                </div>
+
+
+                <div>
+                  <p className="mb-2 text-xs text-gray-500">Sobrenome</p>
+                  <p className="text-sm font-medium">{lastName || "—"}</p>
+                </div>
+
+
+                <div>
+                  <p className="mb-2 text-xs text-gray-500">Email </p>
+                  <p className="text-sm font-medium">{data.email ?? "—"}</p>
+                </div>
+
+
+                <div>
+                  <p className="mb-2 text-xs text-gray-500">Telefone</p>
+                  <p className="text-sm font-medium">{data.telemovel ?? "—"}</p>
+                </div>
+
+
+                <div>
+                  <p className="mb-2 text-xs text-gray-500">BI</p>
+                  <p className="text-sm font-medium">{data.nif ?? "—"}</p>
+                </div>
+                <div>
+                  <p className="mb-2 text-xs text-gray-500">Morada</p>
+                  <p className="text-sm font-medium">{data.morada ?? "—"}</p>
+                </div>
+                <div>
+                  <p className="mb-2 text-xs text-gray-500">Ano Acadêmico</p>
+                  <p className="text-sm font-medium"> {data?.academic_year ?? "—"}</p>
+                </div>
+                <div>
+                  <p className="mb-2 text-xs text-gray-500">Curso</p>
+                  <p className="text-sm font-medium"> {data?.course_name ?? "—"}</p>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Last Name
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Chowdhury
-              </p>
-            </div>
 
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Email address
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                randomuser@pimjo.com
-              </p>
-            </div>
-
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Phone
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                +09 363 398 46
-              </p>
-            </div>
-
-            <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Bio
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Team Manager
-              </p>
-            </div>
           </div>
         </div>
 
@@ -94,85 +234,127 @@ export default function UserInfoCard() {
 
       <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
         <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
-          <div className="px-2 pr-14">
-            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-              Edit Personal Information
-            </h4>
-            <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-              Update your details to keep your profile up-to-date.
-            </p>
-          </div>
-          <form className="flex flex-col">
+
+          <form className="flex flex-col" >
             <div className="custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
-              <div>
-                <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
-                  Social Links
-                </h5>
 
-                <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                  <div>
-                    <Label>Facebook</Label>
-                    <Input
-                      type="text"
-                      defaultValue="https://www.facebook.com/PimjoHQ"
-                    />
-                  </div>
 
-                  <div>
-                    <Label>X.com</Label>
-                    <Input type="text" defaultValue="https://x.com/PimjoHQ" />
-                  </div>
-
-                  <div>
-                    <Label>Linkedin</Label>
-                    <Input
-                      type="text"
-                      defaultValue="https://www.linkedin.com/company/pimjo"
-                    />
-                  </div>
-
-                  <div>
-                    <Label>Instagram</Label>
-                    <Input
-                      type="text"
-                      defaultValue="https://instagram.com/PimjoHQ"
-                    />
-                  </div>
-                </div>
-              </div>
               <div className="mt-7">
                 <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
-                  Personal Information
+                  Informações pessoais
                 </h5>
 
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                  <div className="col-span-2 lg:col-span-1">
-                    <Label>First Name</Label>
-                    <Input type="text" defaultValue="Musharof" />
+
+                  <div>
+                    <Label>Nome</Label>
+                    <Input
+                      name="firstName"
+                      type="text"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      disabled
+                    />
                   </div>
 
-                  <div className="col-span-2 lg:col-span-1">
-                    <Label>Last Name</Label>
-                    <Input type="text" defaultValue="Chowdhury" />
+                  <div>
+                    <Label>Sobrenome</Label>
+                    <Input
+                      name="lastName"
+                      type="text"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      disabled
+                    />
                   </div>
 
-                  <div className="col-span-2 lg:col-span-1">
-                    <Label>Email Address</Label>
-                    <Input type="text" defaultValue="randomuser@pimjo.com" />
+                  <div>
+                    <Label>Email</Label>
+                    <Input
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      disabled
+                    />
                   </div>
 
-                  <div className="col-span-2 lg:col-span-1">
-                    <Label>Phone</Label>
-                    <Input type="text" defaultValue="+09 363 398 46" />
+                  <div>
+                    <Label>Telefone</Label>
+                    <Input
+                      name="phone"
+                      type="text"
+                      value={formData.phone}
+                      onChange={handleChange}
+
+                    />
                   </div>
 
-                  <div className="col-span-2">
-                    <Label>Bio</Label>
-                    <Input type="text" defaultValue="Team Manager" />
+                  <div>
+                    <Label>BI / NIF</Label>
+                    <Input
+                      name="nif"
+                      type="text"
+                      value={formData.nif}
+                      onChange={handleChange}
+                      disabled
+                    />
                   </div>
+
+                  <div>
+                    <Label>Morada</Label>
+                    <Input
+                      name="morada"
+                      type="text"
+                      value={formData.morada}
+                      onChange={handleChange}
+
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Ano Acadêmico</Label>
+                    <select
+                      name="academicYear"
+                      value={formData.academicYear}
+                      onChange={handleSelectChange}
+                      required
+                      className="w-full px-3 py-2 text-sm border rounded-lg"
+                    >
+                      <option value="">Selecione o ano académico</option>
+                      {academicYears.map(year => (
+                        <option key={year.id} value={year.id}>
+                          {year.name}
+                        </option>
+                      ))}
+                    </select>
+
+                  </div>
+
+                  <div>
+                    <Label>Curso</Label>
+                    <select
+                      name="courseId"
+                      value={formData.courseId}
+                      onChange={handleSelectChange}
+                      className="w-full rounded border p-2"
+                    >
+                      <option value="">Selecione o curso</option>
+                      {courses.map((course) => (
+                        <option key={course.id} value={course.id}>
+                          {course.nome}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+
+
+
                 </div>
               </div>
             </div>
+
             <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
               <Button size="sm" variant="outline" onClick={closeModal}>
                 Close
