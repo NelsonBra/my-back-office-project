@@ -34,9 +34,10 @@ export default function Payments() {
     useEffect(() => {
         fetch("http://localhost:3000/students")
             .then((res) => res.json())
-            .then((data) => setStudent(data))
+            .then((response) => setStudent(response.data)) 
             .catch((err) => console.log("Error loading users:", err));
     }, []);
+
 
 
     useEffect(() => {
@@ -141,11 +142,11 @@ export default function Payments() {
                 status: PaymentStatus.Paid,
             }));
 
-          
+
             toast.success("Pagamento efetuado com sucesso!");
         } catch (err: any) {
             console.error(err);
-             toast.error("Error adding payment: " + err.message);
+            toast.error("Error adding payment: " + err.message);
         }
     };
 
@@ -177,7 +178,7 @@ export default function Payments() {
                                 email: selectedUser?.email || "",
                             }));
                         }}
-                        options={students.map(students => ({
+                        options={students?.map(students => ({
                             value: students.id.toString(),
                             label: students.nome,
                         }))}

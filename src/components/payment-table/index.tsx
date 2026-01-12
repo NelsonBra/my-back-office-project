@@ -7,6 +7,8 @@ import Badge from "../ui/badge/Badge";
 import { EyeCloseIcon } from "@/icons";
 import { PaymentMethod, PaymentStatus, } from "@/enum";
 import { ApiPayment, FeeType, TablePayment } from "@/types";
+import ConfirmModal from "../ui/modal/ConfirmModal";
+import { toast } from "react-toastify";
 
 
 
@@ -34,12 +36,14 @@ export default function PaymentsTable() {
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const [anoSelecionado, setAnoSelecionado] = useState("2024-2025");
+    const [anoSelecionado, setAnoSelecionado] = useState("2025-2026");
     const [feesTypes, setFeesTypes] = useState<FeeType[]>([]);
     const [loadingFees, setLoadingFees] = useState(false);
     const [students, setStudents] = useState<{ id: number; nome: string }[]>([]);
     const [selectedFeeType, setSelectedFeeType] = useState<string>("all");
     const [selectedStudent, setSelectedStudent] = useState<string>("all");
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
 
 
 
@@ -48,58 +52,60 @@ export default function PaymentsTable() {
 
 
 
+
+
+    const fetchPayments = async () => {
+        try {
+            setLoading(true);
+            const token = localStorage.getItem("token");
+
+            const params = new URLSearchParams();
+            params.append("ano_letivo", anoSelecionado);
+
+            if (selectedFeeType !== "all") {
+                params.append("fee_type_id", selectedFeeType);
+            }
+
+            if (selectedStudent !== "all") {
+                params.append("student_id", selectedStudent);
+            }
+
+            const resPayments = await fetch(
+                `http://localhost:3000/payments?${params.toString()}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            if (!resPayments.ok) throw new Error("Failed to fetch payments");
+
+            const data = await resPayments.json();
+
+            const mappedPayments = data.payments.map((p: ApiPayment) => ({
+                id: p.payment_id,
+                valor: p.value_paid,
+                curso: p.course?.course_name ?? "—",
+                servico: p.fee_type?.fee_type_name ?? "—",
+                studentId: p.student?.student_id,
+                studentName: p.student?.student_name ?? "—",
+                metodo: p.method_payment,
+                status: p.status,
+                data: new Date(p.data_payment).toLocaleDateString("pt-PT"),
+                numero: p.payment_number,
+                comprovativo: p.proof,
+            }));
+
+            setPayments(mappedPayments);
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchPayments = async () => {
-            try {
-                setLoading(true);
-                const token = localStorage.getItem("token");
-
-
-                const params = new URLSearchParams();
-                params.append("ano_letivo", anoSelecionado);
-                if (selectedFeeType !== "all") {
-                    params.append("fee_type_id", selectedFeeType);
-                }
-
-                if (selectedStudent !== "all") {
-                    params.append("student_id", selectedStudent);
-                }
-
-                const resPayments = await fetch(
-                    `http://localhost:3000/payments?${params.toString()}`,
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-
-                if (!resPayments.ok) throw new Error("Failed to fetch payments");
-                const data = await resPayments.json();
-
-                const paymentsData: ApiPayment[] = data.payments;
-
-                const mappedPayments: TablePayment[] = paymentsData.map((p) => ({
-                    id: p.payment_id,
-                    valor: p.value_paid,
-                    curso: p.course?.course_name ?? "—",
-                    servico: p.fee_type?.fee_type_name ?? "—",
-                    studentId: p.student?.student_id,
-                    studentName: p.student?.student_name ?? "—",
-                    metodo: p.method_payment as PaymentMethod,
-                    status: p.status as PaymentStatus,
-                    data: new Date(p.data_payment).toLocaleDateString("pt-PT"),
-                    numero: p.payment_number,
-                    comprovativo: p.proof,
-                }));
-
-                setPayments(mappedPayments);
-            } catch (err: any) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchPayments();
     }, [anoSelecionado, selectedFeeType, selectedStudent]);
+
+
 
     useEffect(() => {
         const fetchFeesTypes = async () => {
@@ -144,7 +150,7 @@ export default function PaymentsTable() {
                 setStudents(studentsArray);
             } catch (err) {
                 console.error(err);
-                setStudents([]); 
+                setStudents([]);
             }
         };
 
@@ -154,6 +160,33 @@ export default function PaymentsTable() {
 
 
 
+    const handleValidatePayment = async (paymentId: number) => {
+        try {
+            const res = await fetch(
+                `http://localhost:3000/payments/${paymentId}/validate`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (!res.ok) {
+                throw new Error("Falha ao validar pagamento");
+            }
+
+            toast.success("Pagamento validado com sucesso ✅");
+            setTimeout(() => {
+                window.location.reload();
+            }, 800);
+
+
+        } catch (error) {
+            console.error("Erro ao validar pagamento", error);
+            toast.error("Erro ao validar pagamento ❌");
+        }
+    };
 
 
 
@@ -239,7 +272,8 @@ export default function PaymentsTable() {
                                     <TableCell className="px-5 py-4 text-center">
                                         {p.comprovativo ? (
                                             <a
-                                                href={`http://localhost:3000/uploads/${p.comprovativo}`}
+
+                                                href={`http://localhost:3000/uploads/${encodeURIComponent(p.comprovativo)}`}
                                                 target="_blank"
                                                 className="text-blue-600 hover:text-blue-800"
                                                 title="View proof"
@@ -253,13 +287,32 @@ export default function PaymentsTable() {
                                     <TableCell className="px-5 py-4">
                                         {p.status !== PaymentStatus.Paid && (
                                             <button
-
                                                 className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                                                onClick={() => {
+                                                    setSelectedPaymentId(p.id);
+                                                    setIsModalOpen(true);
+                                                }}
                                             >
-                                                Validate
+                                                Validar
                                             </button>
+
                                         )}
                                     </TableCell>
+
+
+                                    <ConfirmModal
+                                        isOpen={isModalOpen}
+                                        onClose={() => setIsModalOpen(false)}
+                                        onConfirm={() => {
+                                            if (selectedPaymentId !== null) {
+                                                handleValidatePayment(selectedPaymentId);
+                                            }
+                                        }}
+                                        title="Validar Pagamento"
+                                        message={`Tem certeza que deseja validar o pagamento #${selectedPaymentId}?`}
+                                    />
+
+
                                 </TableRow>
                             ))}
                         </TableBody>
