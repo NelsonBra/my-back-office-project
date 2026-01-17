@@ -1,17 +1,58 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
+  const [username, setUsername] = useState(null);
+  const [userEmail, setUserEmail] = useState(null);
+  const getStudentFromToken = async () => {
+    const token = localStorage.getItem("token");
 
-function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-  e.stopPropagation();
-  setIsOpen((prev) => !prev);
-}
+    if (!token) {
+      throw new Error("Token não encontrado");
+    }
+
+    const response = await fetch("http://localhost:3000/students/me", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Erro ao buscar os dados do estudante");
+    }
+
+    const studentData = await response.json();
+
+    return {
+      id: studentData.id,
+      name: studentData.nome,
+      email: studentData.email,
+    };
+  };
+
+  useEffect(() => {
+    const fetchStudent = async () => {
+      try {
+        const student = await getStudentFromToken();
+        setUsername(student.name);
+        setUserEmail(student.email);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchStudent();
+  }, []);
+
+  function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    e.stopPropagation();
+    setIsOpen((prev) => !prev);
+  }
 
   function closeDropdown() {
     setIsOpen(false);
@@ -19,7 +60,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
   return (
     <div className="relative">
       <button
-        onClick={toggleDropdown} 
+        onClick={toggleDropdown}
         className="flex items-center text-gray-700 dark:text-gray-400 dropdown-toggle"
       >
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
@@ -31,12 +72,14 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
           />
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">Musharof</span>
+
+        {username && (
+          <span className="mr-2 text-sm font-medium">{username}</span>
+        )}
 
         <svg
-          className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
+          className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+            }`}
           width="18"
           height="20"
           viewBox="0 0 18 20"
@@ -59,16 +102,19 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
         className="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
       >
         <div>
-          <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            Musharof Chowdhury
-          </span>
+
+          {username && (
+            <span className="mr-2 text-sm font-medium">{username}</span>
+          )}
+          {userEmail &&(
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            randomuser@pimjo.com
+            {userEmail}
           </span>
+          )}
         </div>
 
         <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
-          <li>
+          {/* <li>
             <DropdownItem
               onItemClick={closeDropdown}
               tag="a"
@@ -92,8 +138,8 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
               </svg>
               Edit profile
             </DropdownItem>
-          </li>
-          <li>
+          </li> */}
+          {/* <li>
             <DropdownItem
               onItemClick={closeDropdown}
               tag="a"
@@ -115,10 +161,10 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
                   fill=""
                 />
               </svg>
-              Account settings
+              Definição de conta
             </DropdownItem>
-          </li>
-          <li>
+          </li> */}
+          {/* <li>
             <DropdownItem
               onItemClick={closeDropdown}
               tag="a"
@@ -142,7 +188,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
               </svg>
               Support
             </DropdownItem>
-          </li>
+          </li> */}
         </ul>
         <Link
           href="/signin"
@@ -163,7 +209,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
               fill=""
             />
           </svg>
-          Sign out
+         Terminar sessão
         </Link>
       </Dropdown>
     </div>

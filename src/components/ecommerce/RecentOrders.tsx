@@ -32,6 +32,8 @@ export default function RecentOrders() {
     router.push('/table-payment'); // Next.js navigation
   };
 
+  
+
 
   const fetchPayments = async () => {
     try {
@@ -51,8 +53,9 @@ export default function RecentOrders() {
       );
 
       const data = await res.json();
+      const payments = Array.isArray(data.payments) ? data.payments : [];
 
-      const mapped: TablePayment[] = data.payments.map((p: any) => ({
+      const mapped: TablePayment[] = payments.map((p: any) => ({
         id: p.payment_id,
         valor: `${Number(p.value_paid).toFixed(2)} Kz`,
         curso: p.course.course_name,

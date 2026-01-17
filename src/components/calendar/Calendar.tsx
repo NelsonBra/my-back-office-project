@@ -12,12 +12,23 @@ import {
 } from "@fullcalendar/core";
 import { useModal } from "@/hooks/useModal";
 import { Modal } from "@/components/ui/modal";
+import ptBrLocale from "@fullcalendar/core/locales/pt-br";
+import moment from "moment";
+
 
 interface CalendarEvent extends EventInput {
   extendedProps: {
     calendar: string;
   };
 }
+
+const formatDateToMySQL = (dateStr: string) => {
+  return moment(dateStr).format("YYYY-MM-DD");
+};
+
+
+
+
 
 const Calendar: React.FC = () => {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
@@ -39,29 +50,35 @@ const Calendar: React.FC = () => {
   };
 
   useEffect(() => {
-    // Initialize with some events
-    setEvents([
-      {
-        id: "1",
-        title: "Event Conf.",
-        start: new Date().toISOString().split("T")[0],
-        extendedProps: { calendar: "Danger" },
-      },
-      {
-        id: "2",
-        title: "Meeting",
-        start: new Date(Date.now() + 86400000).toISOString().split("T")[0],
-        extendedProps: { calendar: "Success" },
-      },
-      {
-        id: "3",
-        title: "Workshop",
-        start: new Date(Date.now() + 172800000).toISOString().split("T")[0],
-        end: new Date(Date.now() + 259200000).toISOString().split("T")[0],
-        extendedProps: { calendar: "Primary" },
-      },
-    ]);
+    const fetchEvents = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/calendar-events");
+        if (!res.ok) throw new Error("Erro ao buscar eventos");
+        const data = await res.json();
+
+        const eventsFromBackend = data.map((event: any) => ({
+          id: event.id.toString(),
+          title: event.title,
+          start: event.startDate,
+          // FullCalendar não inclui o dia final para allDay, então somamos 1 dia
+          end: event.allDay ? moment(event.endDate).add(1, "day").format("YYYY-MM-DD") : event.endDate,
+          allDay: event.allDay,
+          extendedProps: { calendar: event.color },
+        }));
+
+
+        setEvents(eventsFromBackend);
+      } catch (err: any) {
+        console.error(err);
+        alert("Erro ao carregar eventos: " + err.message);
+      }
+    };
+
+    fetchEvents();
   }, []);
+
+
+
 
   const handleDateSelect = (selectInfo: DateSelectArg) => {
     resetModalFields();
@@ -74,43 +91,85 @@ const Calendar: React.FC = () => {
     const event = clickInfo.event;
     setSelectedEvent(event as unknown as CalendarEvent);
     setEventTitle(event.title);
-    setEventStartDate(event.start?.toISOString().split("T")[0] || "");
-    setEventEndDate(event.end?.toISOString().split("T")[0] || "");
+    setEventStartDate(moment.utc(event.start).format("YYYY-MM-DD"));
+    setEventEndDate(moment.utc(event.end).format("YYYY-MM-DD"));
+
     setEventLevel(event.extendedProps.calendar);
     openModal();
   };
 
-  const handleAddOrUpdateEvent = () => {
-    if (selectedEvent) {
-      // Update existing event
-      setEvents((prevEvents) =>
-        prevEvents.map((event) =>
-          event.id === selectedEvent.id
-            ? {
-                ...event,
-                title: eventTitle,
-                start: eventStartDate,
-                end: eventEndDate,
-                extendedProps: { calendar: eventLevel },
-              }
-            : event
-        )
-      );
-    } else {
-      // Add new event
-      const newEvent: CalendarEvent = {
-        id: Date.now().toString(),
-        title: eventTitle,
-        start: eventStartDate,
-        end: eventEndDate,
-        allDay: true,
-        extendedProps: { calendar: eventLevel },
-      };
-      setEvents((prevEvents) => [...prevEvents, newEvent]);
+
+  const handleAddOrUpdateEvent = async () => {
+    if (!eventTitle || !eventLevel || !eventStartDate || !eventEndDate) {
+      alert("Por favor, preencha todos os campos!");
+      return;
     }
-    closeModal();
-    resetModalFields();
+
+    const payload = {
+      title: eventTitle,
+      color: eventLevel,
+      start_date: formatDateToMySQL(eventStartDate),
+      end_date: formatDateToMySQL(eventEndDate),
+      all_day: true,
+    };
+
+
+    try {
+      let url = "http://localhost:3000/api/calendar-events";
+      let method = "POST";
+
+      if (selectedEvent) {
+        // Se já existe, atualizar
+        url += `/${selectedEvent.id}`;
+        method = "PUT";
+      }
+
+      const res = await fetch(url, {
+        method: method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Erro ao salvar evento");
+      }
+
+      const savedEvent = await res.json();
+
+      const formattedEvent = {
+        id: savedEvent.id.toString(),
+        title: savedEvent.title,
+        start: savedEvent.start_date,
+        end: savedEvent.end_date,
+        allDay: savedEvent.all_day,
+        extendedProps: { calendar: savedEvent.color },
+      };
+
+
+
+      setEvents((prev) => {
+        if (selectedEvent) {
+          // Atualiza evento existente
+          return prev.map((e) =>
+            e.id === selectedEvent.id ? formattedEvent : e
+          );
+        } else {
+          // Adiciona novo evento
+          return [...prev, formattedEvent];
+        }
+      });
+
+      closeModal();
+      resetModalFields();
+    } catch (err: any) {
+      console.error("Erro:", err);
+      alert("Erro ao salvar evento: " + err.message);
+    }
   };
+
+
+
 
   const resetModalFields = () => {
     setEventTitle("");
@@ -133,13 +192,14 @@ const Calendar: React.FC = () => {
             right: "dayGridMonth,timeGridWeek,timeGridDay",
           }}
           events={events}
+          locale={ptBrLocale}
           selectable={true}
           select={handleDateSelect}
           eventClick={handleEventClick}
           eventContent={renderEventContent}
           customButtons={{
             addEventButton: {
-              text: "Add Event +",
+              text: "Adicionar evento +",
               click: openModal,
             },
           }}
@@ -156,15 +216,15 @@ const Calendar: React.FC = () => {
               {selectedEvent ? "Edit Event" : "Add Event"}
             </h5>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Plan your next big moment: schedule or edit an event to stay on
-              track
+
+              planeia as próximas grande atividades
             </p>
           </div>
           <div className="mt-8">
             <div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Event Title
+                  Título do evento
                 </label>
                 <input
                   id="event-title"
@@ -177,7 +237,7 @@ const Calendar: React.FC = () => {
             </div>
             <div className="mt-6">
               <label className="block mb-4 text-sm font-medium text-gray-700 dark:text-gray-400">
-                Event Color
+                Cor do evento
               </label>
               <div className="flex flex-wrap items-center gap-4 sm:gap-5">
                 {Object.entries(calendarsEvents).map(([key, value]) => (
@@ -201,9 +261,8 @@ const Calendar: React.FC = () => {
                           />
                           <span className="flex items-center justify-center w-5 h-5 mr-2 border border-gray-300 rounded-full box dark:border-gray-700">
                             <span
-                              className={`h-2 w-2 rounded-full bg-white ${
-                                eventLevel === key ? "block" : "hidden"
-                              }`}  
+                              className={`h-2 w-2 rounded-full bg-white ${eventLevel === key ? "block" : "hidden"
+                                }`}
                             ></span>
                           </span>
                         </span>
@@ -217,7 +276,7 @@ const Calendar: React.FC = () => {
 
             <div className="mt-6">
               <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Enter Start Date
+                Insira data inicial
               </label>
               <div className="relative">
                 <input
@@ -232,7 +291,7 @@ const Calendar: React.FC = () => {
 
             <div className="mt-6">
               <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Enter End Date
+                Insira data final
               </label>
               <div className="relative">
                 <input
@@ -251,14 +310,14 @@ const Calendar: React.FC = () => {
               type="button"
               className="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto"
             >
-              Close
+              Fechar
             </button>
             <button
               onClick={handleAddOrUpdateEvent}
               type="button"
               className="btn btn-success btn-update-event flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
             >
-              {selectedEvent ? "Update Changes" : "Add Event"}
+              {selectedEvent ? "Atualizar alterações " : "Adicionar evento"}
             </button>
           </div>
         </div>
