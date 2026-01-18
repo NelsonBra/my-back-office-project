@@ -14,11 +14,13 @@ import { useModal } from "@/hooks/useModal";
 import { Modal } from "@/components/ui/modal";
 import ptBrLocale from "@fullcalendar/core/locales/pt-br";
 import moment from "moment";
+import { toast } from "react-toastify";
 
 
 interface CalendarEvent extends EventInput {
   extendedProps: {
     calendar: string;
+    status: number;
   };
 }
 
@@ -41,6 +43,8 @@ const Calendar: React.FC = () => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const calendarRef = useRef<FullCalendar>(null);
   const { isOpen, openModal, closeModal } = useModal();
+  const [eventDescription, setEventDescription] = useState("");
+
 
   const calendarsEvents = {
     Danger: "danger",
@@ -60,10 +64,13 @@ const Calendar: React.FC = () => {
           id: event.id.toString(),
           title: event.title,
           start: event.startDate,
-          // FullCalendar não inclui o dia final para allDay, então somamos 1 dia
           end: event.allDay ? moment(event.endDate).add(1, "day").format("YYYY-MM-DD") : event.endDate,
           allDay: event.allDay,
-          extendedProps: { calendar: event.color },
+          extendedProps: {
+            calendar: event.color,
+            status: event.status,
+            description: event.description,
+          },
         }));
 
 
@@ -93,7 +100,7 @@ const Calendar: React.FC = () => {
     setEventTitle(event.title);
     setEventStartDate(moment.utc(event.start).format("YYYY-MM-DD"));
     setEventEndDate(moment.utc(event.end).format("YYYY-MM-DD"));
-
+    setEventDescription(event.extendedProps?.description || "");
     setEventLevel(event.extendedProps.calendar);
     openModal();
   };
@@ -111,6 +118,7 @@ const Calendar: React.FC = () => {
       start_date: formatDateToMySQL(eventStartDate),
       end_date: formatDateToMySQL(eventEndDate),
       all_day: true,
+      description: eventDescription || null,
     };
 
 
@@ -119,7 +127,6 @@ const Calendar: React.FC = () => {
       let method = "POST";
 
       if (selectedEvent) {
-        // Se já existe, atualizar
         url += `/${selectedEvent.id}`;
         method = "PUT";
       }
@@ -148,26 +155,90 @@ const Calendar: React.FC = () => {
 
 
 
-      setEvents((prev) => {
+      setEvents((prev: any) => {
         if (selectedEvent) {
-          // Atualiza evento existente
-          return prev.map((e) =>
+
+          return prev.map((e: any) =>
             e.id === selectedEvent.id ? formattedEvent : e
           );
         } else {
-          // Adiciona novo evento
+
           return [...prev, formattedEvent];
         }
       });
 
       closeModal();
       resetModalFields();
+      toast.success(`Evento ${selectedEvent ? "atualizado" : "adicionado"} com sucesso!`);
+      setTimeout(() => {
+        window.location.reload();
+      }, 800);
     } catch (err: any) {
       console.error("Erro:", err);
-      alert("Erro ao salvar evento: " + err.message);
+      toast.error("Erro ao salvar evento: " + err.message);
     }
   };
 
+  const handleCancelEvent = async () => {
+    if (!selectedEvent) return;
+
+    const confirmDelete = window.confirm(
+      "Tem certeza que deseja cancelar este evento?"
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/calendar-events/${selectedEvent.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Erro ao cancelar evento");
+      }
+
+
+      setEvents((prev) =>
+        prev.filter((event) => event.id !== selectedEvent.id)
+      );
+
+      closeModal();
+      resetModalFields();
+      toast.success("Evento cancelado com sucesso!");
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Erro ao cancelar evento: " + err.message);
+    }
+  };
+
+  const handleRestoreEvent = async () => {
+    if (!selectedEvent) return;
+
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/calendar-events/${selectedEvent.id}/status`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: 1 }),
+        }
+      );
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message);
+      }
+
+      toast.success("Evento reativado com sucesso!");
+      window.location.reload();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao reativar evento");
+    }
+  };
 
 
 
@@ -177,6 +248,7 @@ const Calendar: React.FC = () => {
     setEventEndDate("");
     setEventLevel("");
     setSelectedEvent(null);
+    setEventDescription("");
   };
 
   return (
@@ -208,10 +280,11 @@ const Calendar: React.FC = () => {
       <Modal
         isOpen={isOpen}
         onClose={closeModal}
-        className="max-w-[700px] p-6 lg:p-10"
+        className="max-w-[700px] w-full max-h-[90vh] p-0"
       >
-        <div className="flex flex-col px-2 overflow-y-auto custom-scrollbar">
-          <div>
+        <div className="flex flex-col h-[90vh] bg-white dark:bg-gray-900 rounded-2xl">
+
+         <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h5 className="mb-2 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-2xl">
               {selectedEvent ? "Edit Event" : "Add Event"}
             </h5>
@@ -220,7 +293,9 @@ const Calendar: React.FC = () => {
               planeia as próximas grande atividades
             </p>
           </div>
-          <div className="mt-8">
+           {/* <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6"></div> */}
+          {/* <div className="mt-8"> */}
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
             <div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -235,6 +310,23 @@ const Calendar: React.FC = () => {
                 />
               </div>
             </div>
+
+            <div className="mt-6">
+              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                Descrição do evento
+              </label>
+
+              <textarea
+                id="event-description"
+                rows={4}
+                value={eventDescription}
+                onChange={(e) => setEventDescription(e.target.value)}
+                placeholder="Descreva o evento (opcional)"
+                disabled={selectedEvent?.extendedProps?.status === 0}
+                className="dark:bg-dark-900 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 disabled:cursor-not-allowed disabled:opacity-60"
+              />
+            </div>
+
             <div className="mt-6">
               <label className="block mb-4 text-sm font-medium text-gray-700 dark:text-gray-400">
                 Cor do evento
@@ -274,6 +366,22 @@ const Calendar: React.FC = () => {
               </div>
             </div>
 
+            {selectedEvent && (
+              <div
+                className={`mt-4 rounded-lg border px-4 py-3 text-sm font-medium ${selectedEvent.extendedProps.status === 1
+                  ? "border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-400"
+                  : "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400"
+                  }`}
+              >
+                {selectedEvent.extendedProps.status === 1 ? (
+                  <span>🟢 Evento ativo</span>
+                ) : (
+                  <span>🔴 Evento cancelado</span>
+                )}
+              </div>
+            )}
+
+
             <div className="mt-6">
               <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                 Insira data inicial
@@ -304,7 +412,8 @@ const Calendar: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-3 mt-6 modal-footer sm:justify-end">
+          {/* FOOTER FIXO */}
+          <div className="flex-shrink-0 px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex flex-wrap gap-3 sm:justify-end">
             <button
               onClick={closeModal}
               type="button"
@@ -312,14 +421,36 @@ const Calendar: React.FC = () => {
             >
               Fechar
             </button>
+
             <button
               onClick={handleAddOrUpdateEvent}
               type="button"
-              className="btn btn-success btn-update-event flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
+              className="flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
             >
-              {selectedEvent ? "Atualizar alterações " : "Adicionar evento"}
+              {selectedEvent ? "Atualizar alterações" : "Adicionar evento"}
             </button>
+
+            {selectedEvent?.extendedProps?.status === 1 && (
+              <button
+                onClick={handleCancelEvent}
+                type="button"
+                className="flex w-full justify-center rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 sm:w-auto"
+              >
+                Cancelar evento
+              </button>
+            )}
+
+            {selectedEvent?.extendedProps?.status === 0 && (
+              <button
+                onClick={handleRestoreEvent}
+                type="button"
+                className="flex w-full justify-center rounded-lg bg-green-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-green-600 sm:w-auto"
+              >
+                Reativar evento
+              </button>
+            )}
           </div>
+
         </div>
       </Modal>
     </div>
