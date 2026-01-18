@@ -34,7 +34,7 @@ export default function Payments() {
     useEffect(() => {
         fetch("http://localhost:3000/students")
             .then((res) => res.json())
-            .then((response) => setStudent(response.data)) 
+            .then((response) => setStudent(response.data))
             .catch((err) => console.log("Error loading users:", err));
     }, []);
 
