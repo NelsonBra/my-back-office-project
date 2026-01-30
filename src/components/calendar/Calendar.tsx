@@ -21,6 +21,7 @@ interface CalendarEvent extends EventInput {
   extendedProps: {
     calendar: string;
     status: number;
+    pdf: any;
   };
 }
 
@@ -44,6 +45,8 @@ const Calendar: React.FC = () => {
   const calendarRef = useRef<FullCalendar>(null);
   const { isOpen, openModal, closeModal } = useModal();
   const [eventDescription, setEventDescription] = useState("");
+  const [eventPdf, setEventPdf] = useState<File | null>(null);
+
 
 
   const calendarsEvents = {
@@ -70,6 +73,7 @@ const Calendar: React.FC = () => {
             calendar: event.color,
             status: event.status,
             description: event.description,
+            pdf: event.pdf,
           },
         }));
 
@@ -143,6 +147,20 @@ const Calendar: React.FC = () => {
       }
 
       const savedEvent = await res.json();
+
+      if (eventPdf) {
+        const formData = new FormData();
+        formData.append("pdf", eventPdf);
+
+        await fetch(
+          `http://localhost:3000/api/calendar-events/${savedEvent.id}/pdf`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+      }
+
 
       const formattedEvent = {
         id: savedEvent.id.toString(),
@@ -284,7 +302,7 @@ const Calendar: React.FC = () => {
       >
         <div className="flex flex-col h-[90vh] bg-white dark:bg-gray-900 rounded-2xl">
 
-         <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h5 className="mb-2 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-2xl">
               {selectedEvent ? "Edit Event" : "Add Event"}
             </h5>
@@ -293,9 +311,9 @@ const Calendar: React.FC = () => {
               planeia as próximas grande atividades
             </p>
           </div>
-           {/* <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6"></div> */}
+          {/* <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6"></div> */}
           {/* <div className="mt-8"> */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
             <div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -326,6 +344,20 @@ const Calendar: React.FC = () => {
                 className="dark:bg-dark-900 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 disabled:cursor-not-allowed disabled:opacity-60"
               />
             </div>
+
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-700">
+                Anexar PDF (opcional)
+              </label>
+
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={(e) => setEventPdf(e.target.files?.[0] || null)}
+                className="mt-2 block w-full text-sm"
+              />
+            </div>
+
 
             <div className="mt-6">
               <label className="block mb-4 text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -396,6 +428,19 @@ const Calendar: React.FC = () => {
                 />
               </div>
             </div>
+
+            {selectedEvent?.extendedProps?.pdf && (
+              <a
+                href={`http://localhost:3000/uploads/${selectedEvent.extendedProps.pdf}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex items-center text-sm text-brand-600 hover:underline"
+              >
+                📄 Ver documento PDF
+              </a>
+            )}
+
+
 
             <div className="mt-6">
               <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
