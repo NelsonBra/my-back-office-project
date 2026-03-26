@@ -18,6 +18,7 @@ import {
   UserCircleIcon,
 } from "../icons/index";
 import SidebarWidget from "./SidebarWidget";
+import { Clock, FileText } from "lucide-react";
 
 type NavItem = {
   name: string;
@@ -34,9 +35,15 @@ const navItems: NavItem[] = [
   },
   {
     icon: <CalenderIcon />,
-    name: "Calendar",
+    name: "Calendário",
     path: "/calendar",
   },
+  {
+    icon: <Clock size={20} />,
+    name: "Momentos",
+    path: "/momment",
+  },
+ 
   {
     icon: <UserCircleIcon />,
     name: "Perfil do utilizador",
@@ -59,7 +66,17 @@ const navItems: NavItem[] = [
       { name: "Basic Tables", path: "/basic-tables", pro: false },
       { name: "Pagamentos", path: "/table-payment", pro: false },
       { name: "Inscritos", path: "/table-users", pro: false },
-      { name: "Matriculados", path: "/table-student", pro: false }
+      { name: "Matriculados", path: "/table-student", pro: false },
+      { name: "Momentos", path: "/listMoment", pro: false }
+    ],
+  },
+   {
+    icon: <FileText size={20} />,
+    name: "Regulamentos",
+     subItems: [
+      { name: "Inserir", path: "/regulament", pro: false },
+      { name: "Listar", path: "/listRegulament", pro: false },
+    
     ],
   },
   {
@@ -319,22 +336,22 @@ const AppSidebar: React.FC = () => {
             <>
               <Image
                 className="dark:hidden"
-                src="/images/logo/logo.svg"
+                src="/images/logo/image.png"
                 alt="Logo"
-                width={150}
+                width={250}
                 height={40}
               />
               <Image
                 className="hidden dark:block"
-                src="/images/logo/logo-dark.svg"
+                src="/images/logo/image.png"
                 alt="Logo"
-                width={150}
+                width={250}
                 height={40}
               />
             </>
           ) : (
             <Image
-              src="/images/logo/logo-icon.svg"
+              src="/images/logo/image.png"
               alt="Logo"
               width={32}
               height={32}

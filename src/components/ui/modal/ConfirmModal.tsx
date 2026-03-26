@@ -33,7 +33,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
                     </button>
 
                     <button
-                        className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                        className="px-4 py-2 rounded-lg bg-brand-600 text-white hover:bg-brand-700"
                         onClick={() => {
                             if (typeof onConfirm === "function") {
                                 onConfirm();
