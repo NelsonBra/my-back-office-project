@@ -248,7 +248,7 @@ export default function Payments() {
                 <div className="col-span-1 xl:col-span-2">
                     <button
                         type="submit"
-                        className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        className="px-6 py-2 bg-brand-600 text-white rounded hover:bg-brand-700"
                     >
                         Adicionar Pagamento
                     </button>

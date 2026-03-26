@@ -287,7 +287,7 @@ export default function PaymentsTable() {
                                     <TableCell className="px-5 py-4">
                                         {p.status !== PaymentStatus.Paid && (
                                             <button
-                                                className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                                                className="bg-brand-600 text-white px-3 py-1 rounded hover:bg-brand-700"
                                                 onClick={() => {
                                                     setSelectedPaymentId(p.id);
                                                     setIsModalOpen(true);
