@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useEffect, useState } from "react";
 import PageBreadcrumb from "../common/PageBreadCrumb";
 import Select from "./Select";
@@ -32,7 +32,7 @@ export default function Payments() {
 
 
     useEffect(() => {
-        fetch("http://localhost:3000/students")
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/students`)
             .then((res) => res.json())
             .then((response) => setStudent(response.data))
             .catch((err) => console.log("Error loading users:", err));
@@ -42,7 +42,7 @@ export default function Payments() {
 
     useEffect(() => {
         const fetchCourses = async () => {
-            const res = await fetch("http://localhost:3000/courses");
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses`);
             const data = await res.json();
             setCourses(data);
         };
@@ -59,7 +59,7 @@ export default function Payments() {
 
     const fetchFeesByCourse = async (courseId: string) => {
         try {
-            const res = await fetch(`http://localhost:3000/courses/${courseId}/fees`);
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/${courseId}/fees`);
             if (!res.ok) throw new Error("Failed to fetch fees for course");
             const data: { course: any; fees: CourseFee[] } = await res.json();
             setFeeTypes(data.fees);
@@ -121,7 +121,7 @@ export default function Payments() {
                 proof: null
             };
 
-            const res = await fetch("http://localhost:3000/payments", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),

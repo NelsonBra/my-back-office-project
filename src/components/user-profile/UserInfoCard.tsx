@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useEffect, useState } from "react";
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
@@ -35,7 +35,7 @@ export default function UserInfoCard({ data }: Props) {
 
 
   useEffect(() => {
-    fetch("http://localhost:3000/academic-years")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/academic-years`)
       .then(res => res.json())
       .then(data => {
         setAcademicYears(data.data);
@@ -47,7 +47,7 @@ export default function UserInfoCard({ data }: Props) {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const res = await fetch("http://localhost:3000/courses");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses`);
         const data = await res.json();
         setCourses(data);
       } catch (err) {
@@ -98,7 +98,7 @@ export default function UserInfoCard({ data }: Props) {
       };
 
 
-      const res = await fetch(`http://localhost:3000/students/${data?.id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/students/${data?.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

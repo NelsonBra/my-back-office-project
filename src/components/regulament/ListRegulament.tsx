@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { FileText, Download } from "lucide-react";
@@ -18,7 +18,7 @@ export default function RegulamentosList() {
   useEffect(() => {
     const fetchRegulamentos = async () => {
       try {
-        const res = await fetch("http://localhost:3000/regulamentos");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regulamentos`);
         const data = await res.json();
 
         if (!res.ok) {

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import {
   Table,
   TableBody,
@@ -49,7 +49,7 @@ export default function RecentOrders() {
       }
 
       const res = await fetch(
-        `http://localhost:3000/payments?${params.toString()}`
+        `${process.env.NEXT_PUBLIC_API_URL}/payments?${params.toString()}`
       );
 
       const data = await res.json();

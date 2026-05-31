@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useState, useRef, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -59,7 +59,7 @@ const Calendar: React.FC = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/calendar-events");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/calendar-events`);
         if (!res.ok) throw new Error("Erro ao buscar eventos");
         const data = await res.json();
 
@@ -127,7 +127,7 @@ const Calendar: React.FC = () => {
 
 
     try {
-      let url = "http://localhost:3000/api/calendar-events";
+      let url = `${process.env.NEXT_PUBLIC_API_URL}/api/calendar-events`;
       let method = "POST";
 
       if (selectedEvent) {
@@ -153,7 +153,7 @@ const Calendar: React.FC = () => {
         formData.append("pdf", eventPdf);
 
         await fetch(
-          `http://localhost:3000/api/calendar-events/${savedEvent.id}/pdf`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/calendar-events/${savedEvent.id}/pdf`,
           {
             method: "POST",
             body: formData,
@@ -208,7 +208,7 @@ const Calendar: React.FC = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/calendar-events/${selectedEvent.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/calendar-events/${selectedEvent.id}`,
         {
           method: "DELETE",
         }
@@ -238,7 +238,7 @@ const Calendar: React.FC = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/calendar-events/${selectedEvent.id}/status`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/calendar-events/${selectedEvent.id}/status`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -431,7 +431,7 @@ const Calendar: React.FC = () => {
 
             {selectedEvent?.extendedProps?.pdf && (
               <a
-                href={`http://localhost:3000/uploads/${selectedEvent.extendedProps.pdf}`}
+                href={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${selectedEvent.extendedProps.pdf}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-4 inline-flex items-center text-sm text-brand-600 hover:underline"

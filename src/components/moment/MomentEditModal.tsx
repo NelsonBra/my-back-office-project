@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ChangeEvent, useState, useEffect } from "react";
 import { Trash2, Upload, FileText } from "lucide-react";
@@ -87,7 +87,7 @@ export const MomentEditModal: React.FC<MomentEditModalProps> = ({
             setUpdating(true);
 
             // Atualiza título/descrição
-            const res = await fetch(`http://localhost:3000/moment/${selectedMoment.id}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/moment/${selectedMoment.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -103,7 +103,7 @@ export const MomentEditModal: React.FC<MomentEditModalProps> = ({
                 const formData = new FormData();
                 newFiles.forEach((f) => formData.append("files", f.file));
                 const uploadRes = await fetch(
-                    `http://localhost:3000/moment/${selectedMoment.id}/files`,
+                    `${process.env.NEXT_PUBLIC_API_URL}/moment/${selectedMoment.id}/files`,
                     { method: "POST", body: formData }
                 );
                 if (!uploadRes.ok) throw new Error("Erro ao enviar arquivos");
@@ -156,14 +156,14 @@ export const MomentEditModal: React.FC<MomentEditModalProps> = ({
                             >
                                 {file.file_type === "image" && (
                                     <img
-                                        src={`http://localhost:3000/${file.file_url}`}
+                                        src={`${process.env.NEXT_PUBLIC_API_URL}/${file.file_url}`}
                                         alt={file.file_name}
                                         className="w-full rounded-lg"
                                     />
                                 )}
                                 {file.file_type === "video" && (
                                     <video
-                                        src={`http://localhost:3000/${file.file_url}`}
+                                        src={`${process.env.NEXT_PUBLIC_API_URL}/${file.file_url}`}
                                         controls
                                         className="w-full rounded-lg"
                                     />

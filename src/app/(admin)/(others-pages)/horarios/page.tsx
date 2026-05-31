@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useModal } from "@/hooks/useModal";
@@ -33,13 +33,13 @@ export default function HorariosPage() {
     const params = new URLSearchParams();
     if (courseId) params.append("course_id", courseId);
     if (year) params.append("year", year);
-    const res = await fetch(`http://localhost:3000/api/class-schedules?${params.toString()}`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/class-schedules?${params.toString()}`);
     const data = await res.json();
     setSchedules(Array.isArray(data) ? data : []);
   };
 
   useEffect(() => {
-    fetch("http://localhost:3000/courses")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses`)
       .then((r) => r.json())
       .then((data) => setCourses(Array.isArray(data) ? data : []));
     fetchSchedules("", "");
@@ -63,7 +63,7 @@ export default function HorariosPage() {
     if (!formCourseId || !formYear || !formSemester) return;
 
     const courseName = courses.find((c) => String(c.id) === formCourseId)?.nome ?? "";
-    const res = await fetch("http://localhost:3000/api/class-schedules", {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/class-schedules`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -78,7 +78,7 @@ export default function HorariosPage() {
       const { id } = await res.json();
       const fd = new FormData();
       fd.append("pdf", formPdf);
-      await fetch(`http://localhost:3000/api/class-schedules/${id}/pdf`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/class-schedules/${id}/pdf`, {
         method: "POST",
         body: fd,
       });
@@ -94,7 +94,7 @@ export default function HorariosPage() {
     if (!pdfFile || selectedScheduleId === null) return;
     const fd = new FormData();
     fd.append("pdf", pdfFile);
-    await fetch(`http://localhost:3000/api/class-schedules/${selectedScheduleId}/pdf`, {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/class-schedules/${selectedScheduleId}/pdf`, {
       method: "POST",
       body: fd,
     });
@@ -104,13 +104,13 @@ export default function HorariosPage() {
   };
 
   const handleRemovePdf = async (id: number) => {
-    await fetch(`http://localhost:3000/api/class-schedules/${id}/pdf`, { method: "DELETE" });
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/class-schedules/${id}/pdf`, { method: "DELETE" });
     fetchSchedules();
   };
 
   const handleDelete = async (id: number) => {
     if (!window.confirm("Tem a certeza que quer eliminar este horário?")) return;
-    await fetch(`http://localhost:3000/api/class-schedules/${id}`, { method: "DELETE" });
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/class-schedules/${id}`, { method: "DELETE" });
     fetchSchedules();
   };
 
@@ -187,7 +187,7 @@ export default function HorariosPage() {
                 <td className="px-4 py-3">
                   {s.pdf ? (
                     <button
-                      onClick={() => window.open(`http://localhost:3000/uploads/${s.pdf}`, "_blank")}
+                      onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL}/uploads/${s.pdf}`, "_blank")}
                       className="text-brand-500 hover:underline text-sm"
                     >
                       Ver PDF

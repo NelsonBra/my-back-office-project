@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { UploadCloud, FileText } from "lucide-react";
@@ -43,7 +43,7 @@ export default function RegulamentosPage() {
           const formData = new FormData();
           formData.append("file", file); // must match upload.single("file")
       
-          const response = await fetch("http://localhost:3000/regulamentos", {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regulamentos`, {
             method: "POST",
             body: formData,
           });

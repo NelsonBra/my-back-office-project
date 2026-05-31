@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import { EyeCloseIcon, EyeIcon } from "@/icons";
@@ -44,7 +44,7 @@ function ResetPasswordFormContent() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3000/api/auth/reset-password", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/reset-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

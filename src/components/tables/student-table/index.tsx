@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
@@ -29,7 +29,7 @@ export default function StudentTable() {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:3000/students", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/students`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

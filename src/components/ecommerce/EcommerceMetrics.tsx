@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useEffect, useState } from "react";
 import Badge from "../ui/badge/Badge";
 import { ArrowDownIcon, ArrowUpIcon, BoxIconLine, GroupIcon } from "@/icons";
@@ -16,13 +16,13 @@ export const EcommerceMetrics = () => {
     const loadMetrics = async () => {
       try {
 
-        const studentsRes = await fetch("http://localhost:3000/students");
+        const studentsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/students`);
         const studentsData = await studentsRes.json();
         setStudentsTotal(studentsData.total_students ?? 0);
         setStudentsPercentage(studentsData.percentage ?? 0);
 
 
-        const paymentsRes = await fetch("http://localhost:3000/payments");
+        const paymentsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments`);
         const paymentsData = await paymentsRes.json();
         setPaymentsTotal(Number(paymentsData.total_paid ?? 0));
         setPaymentsPercentage(Number(paymentsData.percentage ?? 0));

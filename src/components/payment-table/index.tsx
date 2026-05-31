@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -71,7 +71,7 @@ export default function PaymentsTable() {
             }
 
             const resPayments = await fetch(
-                `http://localhost:3000/payments?${params.toString()}`,
+                `${process.env.NEXT_PUBLIC_API_URL}/payments?${params.toString()}`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
@@ -112,7 +112,7 @@ export default function PaymentsTable() {
             try {
                 setLoadingFees(true);
 
-                const res = await fetch("http://localhost:3000/fees-types");
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/fees-types`);
 
                 if (!res.ok) {
                     throw new Error("Failed to fetch fees types");
@@ -134,7 +134,7 @@ export default function PaymentsTable() {
         const fetchStudents = async () => {
             try {
                 const token = localStorage.getItem("token");
-                const res = await fetch("http://localhost:3000/students", {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/students`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
@@ -163,7 +163,7 @@ export default function PaymentsTable() {
     const handleValidatePayment = async (paymentId: number) => {
         try {
             const res = await fetch(
-                `http://localhost:3000/payments/${paymentId}/validate`,
+                `${process.env.NEXT_PUBLIC_API_URL}/payments/${paymentId}/validate`,
                 {
                     method: "PATCH",
                     headers: {
@@ -273,7 +273,7 @@ export default function PaymentsTable() {
                                         {p.comprovativo ? (
                                             <a
 
-                                                href={`http://localhost:3000/uploads/${encodeURIComponent(p.comprovativo)}`}
+                                                href={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${encodeURIComponent(p.comprovativo)}`}
                                                 target="_blank"
                                                 className="text-blue-600 hover:text-blue-800"
                                                 title="View proof"

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
@@ -16,7 +16,7 @@ export default function SignUpForm() {
 
 
   useEffect(() => {
-    fetch("http://localhost:3000/academic-years")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/academic-years`)
       .then(res => res.json())
       .then(data => {
         setAcademicYears(data.data);
@@ -40,7 +40,7 @@ export default function SignUpForm() {
     };
 
     try {
-      const res = await fetch("http://localhost:3000/api/auth/register", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -27,7 +27,7 @@ export default function UserTable() {
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const res = await fetch("http://localhost:3000/users");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`);
 
         if (!res.ok) {
           throw new Error("Failed to fetch users");

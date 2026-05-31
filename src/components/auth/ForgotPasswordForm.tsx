@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import { ChevronLeftIcon } from "@/icons";
@@ -15,7 +15,7 @@ export default function ForgotPasswordForm() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3000/api/auth/forgot-password", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/forgot-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { ApexOptions } from "apexcharts";
 import dynamic from "next/dynamic";
 import { MoreDotIcon } from "@/icons";
@@ -41,7 +41,7 @@ export default function MonthlySalesChart() {
   useEffect(() => {
     const fetchPayments = async () => {
       try {
-        const res = await fetch("http://localhost:3000/payments/per-month", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/per-month`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
         const data = await res.json();

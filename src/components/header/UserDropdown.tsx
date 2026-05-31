@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -16,7 +16,7 @@ export default function UserDropdown() {
       throw new Error("Token não encontrado");
     }
 
-    const response = await fetch("http://localhost:3000/students/me", {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/students/me`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

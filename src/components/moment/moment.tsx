@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import type { ChangeEvent } from "react";
@@ -56,7 +56,7 @@ export default function MomentsUploadScreen() {
             setLoading(true);
 
 
-            const momentRes = await fetch("http://localhost:3000/moment", {
+            const momentRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/moment`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ title, description }),
@@ -74,7 +74,7 @@ export default function MomentsUploadScreen() {
                 });
 
                 const uploadRes = await fetch(
-                    `http://localhost:3000/moment/${momentId}/files`,
+                    `${process.env.NEXT_PUBLIC_API_URL}/moment/${momentId}/files`,
                     {
                         method: "POST",
                         body: formData,

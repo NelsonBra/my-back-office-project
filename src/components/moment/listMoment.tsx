@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, ChangeEvent } from "react";
 import { Trash2, Upload, FileText } from "lucide-react";
@@ -43,7 +43,7 @@ export default function MomentsAdminScreen() {
     const fetchMoments = async () => {
         setLoading(true);
         try {
-            const res = await fetch("http://localhost:3000/moment");
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/moment`);
             const data: Moment[] = await res.json();
             setMoments(data);
         } catch (err) {
@@ -60,7 +60,7 @@ export default function MomentsAdminScreen() {
 
     const openModal = async (moment: Moment) => {
         try {
-            const res = await fetch(`http://localhost:3000/moment/${moment.id}`);
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/moment/${moment.id}`);
             const data: Moment = await res.json();
             setSelectedMoment(data);
             setNewFiles([]);
@@ -80,7 +80,7 @@ export default function MomentsAdminScreen() {
     const handleDeleteMoment = async (id: number) => {
         if (!confirm("Tem certeza que deseja deletar este momento?")) return;
         try {
-            const res = await fetch(`http://localhost:3000/moment/${id}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/moment/${id}`, {
                 method: "DELETE",
             });
             if (!res.ok) throw new Error("Erro ao deletar");
@@ -129,7 +129,7 @@ export default function MomentsAdminScreen() {
             setUpdating(true);
 
             // Atualizar título/descrição
-            const res = await fetch(`http://localhost:3000/moment/${selectedMoment.id}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/moment/${selectedMoment.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -145,7 +145,7 @@ export default function MomentsAdminScreen() {
                 const formData = new FormData();
                 newFiles.forEach((f) => formData.append("files", f.file));
                 const uploadRes = await fetch(
-                    `http://localhost:3000/moment/${selectedMoment.id}/files`,
+                    `${process.env.NEXT_PUBLIC_API_URL}/moment/${selectedMoment.id}/files`,
                     { method: "POST", body: formData }
                 );
                 if (!uploadRes.ok) throw new Error("Erro ao enviar arquivos");

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from "react";
 import PageBreadcrumb from "../common/PageBreadCrumb";
 import CheckboxComponents from "./form-elements/CheckboxComponents";
@@ -40,7 +40,7 @@ export default function StudentForm() {
     const [users, setUsers] = useState<User[]>([]);
 
     useEffect(() => {
-        fetch("http://localhost:3000/users")
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`)
             .then((res) => res.json())
             .then((data) => setUsers(data))
             .catch((err) => console.log("Error loading users:", err));
@@ -71,7 +71,7 @@ export default function StudentForm() {
         e.preventDefault();
 
         try {
-            const response = await fetch("http://localhost:3000/students", {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/students`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData),

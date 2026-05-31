@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useModal } from "@/hooks/useModal";
@@ -34,13 +34,13 @@ export default function CalendarioProvasPage() {
     const params = new URLSearchParams({ event_type: "calendario_provas" });
     if (courseId) params.append("course_id", courseId);
     if (year) params.append("year", year);
-    const res = await fetch(`http://localhost:3000/api/calendar-events?${params.toString()}`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/calendar-events?${params.toString()}`);
     const data = await res.json();
     setEvents(Array.isArray(data) ? data : []);
   };
 
   useEffect(() => {
-    fetch("http://localhost:3000/courses")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses`)
       .then((r) => r.json())
       .then((data) => setCourses(Array.isArray(data) ? data : []));
     fetchEvents("", "");
@@ -67,7 +67,7 @@ export default function CalendarioProvasPage() {
     const courseLabel = courses.find((c) => String(c.id) === formCourseId);
     const title = `${courseLabel?.nome ?? ""} - ${formYear}º Ano - ${formSemester}º Sem.`;
 
-    const res = await fetch("http://localhost:3000/api/calendar-events", {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/calendar-events`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -91,7 +91,7 @@ export default function CalendarioProvasPage() {
     if (formPdf) {
       const fd = new FormData();
       fd.append("pdf", formPdf);
-      await fetch(`http://localhost:3000/api/calendar-events/${data.id}/pdf`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/calendar-events/${data.id}/pdf`, {
         method: "POST",
         body: fd,
       });
@@ -107,7 +107,7 @@ export default function CalendarioProvasPage() {
     if (!pdfFile || selectedEventId === null) return;
     const fd = new FormData();
     fd.append("pdf", pdfFile);
-    await fetch(`http://localhost:3000/api/calendar-events/${selectedEventId}/pdf`, {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/calendar-events/${selectedEventId}/pdf`, {
       method: "POST",
       body: fd,
     });
@@ -117,13 +117,13 @@ export default function CalendarioProvasPage() {
   };
 
   const handleRemovePdf = async (id: number) => {
-    await fetch(`http://localhost:3000/api/calendar-events/${id}/pdf`, { method: "DELETE" });
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/calendar-events/${id}/pdf`, { method: "DELETE" });
     fetchEvents();
   };
 
   const handleCancel = async (id: number) => {
     if (!window.confirm("Tem a certeza que quer cancelar este evento?")) return;
-    await fetch(`http://localhost:3000/api/calendar-events/${id}`, { method: "DELETE" });
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/calendar-events/${id}`, { method: "DELETE" });
     fetchEvents();
   };
 
@@ -206,7 +206,7 @@ export default function CalendarioProvasPage() {
                 <td className="px-4 py-3">
                   {ev.pdf ? (
                     <button
-                      onClick={() => window.open(`http://localhost:3000/uploads/${ev.pdf}`, "_blank")}
+                      onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL}/uploads/${ev.pdf}`, "_blank")}
                       className="text-brand-500 hover:underline text-sm"
                     >
                       Ver PDF

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -17,7 +17,7 @@ type PaymentNotification = {
 export default function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [notifying, setNotifying] = useState(true);
-  const socket = io("http://localhost:3000");
+  const socket = io(process.env.NEXT_PUBLIC_API_URL);
 
   const [notifications, setNotifications] = useState<PaymentNotification[]>([]);
   const [newAlert, setNewAlert] = useState(false);
