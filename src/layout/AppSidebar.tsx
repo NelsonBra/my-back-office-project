@@ -18,7 +18,7 @@ import {
   UserCircleIcon,
 } from "../icons/index";
 import SidebarWidget from "./SidebarWidget";
-import { Clock, FileText } from "lucide-react";
+import { BookOpen, Clock, FileText } from "lucide-react";
 
 type NavItem = {
   name: string;
@@ -77,6 +77,14 @@ const navItems: NavItem[] = [
       { name: "Inserir", path: "/regulament", pro: false },
       { name: "Listar", path: "/listRegulament", pro: false },
     
+    ],
+  },
+  {
+    name: "Académico",
+    icon: <BookOpen size={20} />,
+    subItems: [
+      { name: "Horários de Aulas", path: "/horarios", pro: false },
+      { name: "Calendário de Provas", path: "/calendario-provas", pro: false },
     ],
   },
   {
