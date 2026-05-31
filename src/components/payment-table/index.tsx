@@ -1,4 +1,5 @@
-﻿"use client";
+import { getFileUrl } from '@/utils/fileUrl';
+"use client";
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -273,7 +274,7 @@ export default function PaymentsTable() {
                                         {p.comprovativo ? (
                                             <a
 
-                                                href={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${encodeURIComponent(p.comprovativo)}`}
+                                                href={getFileUrl(encodeURIComponent(p.comprovativo))}
                                                 target="_blank"
                                                 className="text-blue-600 hover:text-blue-800"
                                                 title="View proof"

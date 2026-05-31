@@ -1,4 +1,5 @@
-﻿"use client";
+import { getFileUrl } from '@/utils/fileUrl';
+"use client";
 
 import { useEffect, useState } from "react";
 import { useModal } from "@/hooks/useModal";
@@ -187,7 +188,7 @@ export default function HorariosPage() {
                 <td className="px-4 py-3">
                   {s.pdf ? (
                     <button
-                      onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL}/uploads/${s.pdf}`, "_blank")}
+                      onClick={() => window.open(getFileUrl(s.pdf), "_blank")}
                       className="text-brand-500 hover:underline text-sm"
                     >
                       Ver PDF

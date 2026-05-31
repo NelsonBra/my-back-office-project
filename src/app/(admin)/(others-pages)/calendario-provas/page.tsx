@@ -1,4 +1,5 @@
-﻿"use client";
+import { getFileUrl } from '@/utils/fileUrl';
+"use client";
 
 import { useEffect, useState } from "react";
 import { useModal } from "@/hooks/useModal";
@@ -206,7 +207,7 @@ export default function CalendarioProvasPage() {
                 <td className="px-4 py-3">
                   {ev.pdf ? (
                     <button
-                      onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL}/uploads/${ev.pdf}`, "_blank")}
+                      onClick={() => window.open(getFileUrl(ev.pdf), "_blank")}
                       className="text-brand-500 hover:underline text-sm"
                     >
                       Ver PDF

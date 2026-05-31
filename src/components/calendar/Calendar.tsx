@@ -1,4 +1,5 @@
-﻿"use client";
+import { getFileUrl } from '@/utils/fileUrl';
+"use client";
 import React, { useState, useRef, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -431,7 +432,7 @@ const Calendar: React.FC = () => {
 
             {selectedEvent?.extendedProps?.pdf && (
               <a
-                href={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${selectedEvent.extendedProps.pdf}`}
+                href={getFileUrl(selectedEvent.extendedProps.pdf)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-4 inline-flex items-center text-sm text-brand-600 hover:underline"
