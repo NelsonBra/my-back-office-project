@@ -1,5 +1,5 @@
-import { getFileUrl } from '@/utils/fileUrl';
 "use client";
+import { getFileUrl } from '@/utils/fileUrl';
 
 import Image from "next/image";
 import { useEffect, useState } from "react";

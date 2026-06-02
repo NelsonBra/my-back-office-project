@@ -1,5 +1,5 @@
-import { getFileUrl } from '@/utils/fileUrl';
 "use client";
+import { getFileUrl } from '@/utils/fileUrl';
 import React, { useState, useRef, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
