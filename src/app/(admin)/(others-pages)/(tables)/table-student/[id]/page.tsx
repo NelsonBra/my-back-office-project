@@ -7,7 +7,7 @@ type PageProps = {
 };
 
 async function getStudent(id: string): Promise<Person> {
-  const res = await fetch(`http://localhost:3000/students/${id}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/students/${id}`, {
     cache: "no-store",
   });
 
