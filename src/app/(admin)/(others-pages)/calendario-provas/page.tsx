@@ -1,5 +1,5 @@
 "use client";
-import { getFileUrl } from '@/utils/fileUrl';
+import { getFileUrl } from '../../../../utils/fileUrl';
 
 import { useEffect, useState } from "react";
 import { useModal } from "@/hooks/useModal";
