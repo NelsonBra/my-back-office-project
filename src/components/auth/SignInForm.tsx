@@ -1,23 +1,22 @@
-﻿"use client";
+"use client";
 import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
-import Button from "@/components/ui/button/Button";
-import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
+import { EyeCloseIcon, EyeIcon } from "@/icons";
 import Link from "next/link";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
+import { GraduationCap, Lock, Mail } from "lucide-react";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e: any) => {
-     e.preventDefault();
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
 
     try {
@@ -39,10 +38,7 @@ export default function SignInForm() {
       localStorage.setItem("userid", data.user.id);
 
       toast.success("Login realizado com sucesso!");
-
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 800);
+      setTimeout(() => { window.location.href = "/"; }, 800);
     } catch (err) {
       console.error(err);
       toast.error("Erro na requisição. Tente novamente.");
@@ -51,128 +47,110 @@ export default function SignInForm() {
     }
   };
 
-
   return (
-    <div className="flex flex-col flex-1 lg:w-1/2 w-full">
-      <div className="w-full max-w-md sm:pt-10 mx-auto mb-5">
-        <Link
-          href="/"
-          className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-        >
-          <ChevronLeftIcon />
-          Back to dashboard
-        </Link>
+    <div className="w-full">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-500/10 mb-5">
+          <GraduationCap size={24} className="text-brand-500" />
+        </div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+          Bem-vindo de volta
+        </h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Inicie sessão para aceder ao backoffice
+        </p>
       </div>
-      <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
+
+      {/* Form */}
+      <form onSubmit={handleLogin} className="space-y-5">
         <div>
-          <div className="mb-5 sm:mb-8">
-            <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
-              Login
-            </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Insira seu email e senha!
-            </p>
-          </div>
-          <div>
-
-            <div className="relative py-3 sm:py-5">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200 dark:border-gray-800"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="p-2 text-gray-400 bg-white dark:bg-gray-900 sm:px-5 sm:py-2">
-                  Or
-                </span>
-              </div>
-            </div>
-           <form onSubmit={handleLogin}>
-              <div className="space-y-6">
-                <div>
-                  <Label>
-                    Email <span className="text-error-500">*</span>{" "}
-                  </Label>
-
-                  <Input
-                    placeholder="info@gmail.com"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-
-                
-
-                </div>
-                <div>
-                  <Label>
-                    Senha <span className="text-error-500">*</span>{" "}
-                  </Label>
-                  <div className="relative">
-                     <Input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Insira sua senha"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                    <span
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
-                    >
-                      {showPassword ? (
-                        <EyeIcon className="fill-gray-500 dark:fill-gray-400" />
-                      ) : (
-                        <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400" />
-                      )}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Checkbox checked={isChecked} onChange={setIsChecked} />
-                    <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-400">
-                      Guardar senha
-                    </span>
-                  </div>
-                  <Link
-                    href="/forgot-password"
-                    className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
-                  >
-                    Esqueceu a senha?
-                  </Link>
-                </div>
-                {/* <div>
-                  <Button
-                    className="w-full"
-                    size="sm"
-                    onClick={handleLogin}
-                  >
-                    {loading ? "Carregando..." : "Login"}
-                  </Button>
-
-
-                </div> */}
-
-                 <div>
-                  <button className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
-                   Login
-                  </button>
-                </div>
-              </div>
-            </form>
-
-            {/* <div className="mt-5">
-              <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                Don&apos;t have an account? {""}
-                <Link
-                  href="/signup"
-                  className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
-                >
-                  Sign Up
-                </Link>
-              </p>
-            </div> */}
+          <Label>
+            Email <span className="text-error-500">*</span>
+          </Label>
+          <div className="relative mt-1">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+              <Mail size={16} />
+            </span>
+            <input
+              type="email"
+              placeholder="utilizador@ispaj.ao"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full h-11 pl-9 pr-4 rounded-lg border border-gray-200 bg-white text-sm text-gray-800
+                placeholder:text-gray-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/10
+                dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-brand-500"
+            />
           </div>
         </div>
-      </div>
+
+        <div>
+          <Label>
+            Senha <span className="text-error-500">*</span>
+          </Label>
+          <div className="relative mt-1">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+              <Lock size={16} />
+            </span>
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="A sua senha"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full h-11 pl-9 pr-11 rounded-lg border border-gray-200 bg-white text-sm text-gray-800
+                placeholder:text-gray-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/10
+                dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-brand-500"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              {showPassword ? (
+                <EyeIcon className="fill-gray-500 dark:fill-gray-400" />
+              ) : (
+                <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <Checkbox checked={isChecked} onChange={setIsChecked} />
+            <span className="text-sm text-gray-600 dark:text-gray-400">Guardar sessão</span>
+          </label>
+          <Link
+            href="/forgot-password"
+            className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400 font-medium"
+          >
+            Esqueceu a senha?
+          </Link>
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full h-11 flex items-center justify-center gap-2 rounded-lg bg-brand-500 text-white text-sm font-semibold
+            hover:bg-brand-600 active:bg-brand-700 transition-colors duration-200
+            disabled:opacity-60 disabled:cursor-not-allowed
+            shadow-sm shadow-brand-500/20"
+        >
+          {loading ? (
+            <>
+              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+              </svg>
+              A entrar...
+            </>
+          ) : (
+            "Entrar"
+          )}
+        </button>
+      </form>
     </div>
   );
 }
