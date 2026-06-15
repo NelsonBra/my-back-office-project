@@ -34,18 +34,12 @@ export default function SignIn() {
         {/* Top logo */}
         <div className="relative z-10 p-8">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center overflow-hidden">
-              <Image
-                src="/images/logo/image.png"
-                alt="ISPAJ Logo"
-                width={48}
-                height={48}
-                className="object-contain"
-              />
-            </div>
-            <div>
-              <p className="text-white font-bold text-lg leading-tight">ISPAJ</p>
-              <p className="text-white/60 text-xs">Backoffice Académico</p>
+            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-3 py-2">
+              <GraduationCap size={20} className="text-orange-300 flex-shrink-0" />
+              <div>
+                <p className="text-white font-bold text-sm leading-tight">ISPAJ</p>
+                <p className="text-white/60 text-xs">Backoffice Académico</p>
+              </div>
             </div>
           </div>
         </div>
