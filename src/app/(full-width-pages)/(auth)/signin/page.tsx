@@ -16,7 +16,7 @@ export default function SignIn() {
         {/* Building photo */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#7e2410] via-[#c4320a] to-[#fb6514]">
           <Image
-            src="/images/ispaj/building.jpg"
+            src="/images/ispaj/principal.jpeg"
             alt="ISPAJ — Instituto Superior Politécnico Alvorecer da Juventude"
             fill
             className="object-cover mix-blend-overlay opacity-60"
