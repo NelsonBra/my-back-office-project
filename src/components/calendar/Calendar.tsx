@@ -65,10 +65,10 @@ const Calendar: React.FC = () => {
         const data = await res.json();
 
         const eventsFromBackend = data.map((event: any) => ({
-          id: event.id.toString(),
+          id: event.id != null ? event.id.toString() : String(Math.random()),
           title: event.title,
           start: event.startDate,
-          end: event.allDay ? moment(event.endDate).add(1, "day").format("YYYY-MM-DD") : event.endDate,
+          end: event.allDay && event.endDate ? moment(event.endDate).add(1, "day").format("YYYY-MM-DD") : event.endDate ?? undefined,
           allDay: event.allDay,
           extendedProps: {
             calendar: event.color,
@@ -103,8 +103,8 @@ const Calendar: React.FC = () => {
     const event = clickInfo.event;
     setSelectedEvent(event as unknown as CalendarEvent);
     setEventTitle(event.title);
-    setEventStartDate(moment.utc(event.start).format("YYYY-MM-DD"));
-    setEventEndDate(moment.utc(event.end).format("YYYY-MM-DD"));
+    setEventStartDate(event.start ? moment.utc(event.start).format("YYYY-MM-DD") : "");
+    setEventEndDate(event.end ? moment.utc(event.end).format("YYYY-MM-DD") : "");
     setEventDescription(event.extendedProps?.description || "");
     setEventLevel(event.extendedProps.calendar);
     openModal();
@@ -504,7 +504,9 @@ const Calendar: React.FC = () => {
 };
 
 const renderEventContent = (eventInfo: EventContentArg) => {
-  const colorClass = `fc-bg-${eventInfo.event.extendedProps.calendar.toLowerCase()}`;
+  const colorClass = eventInfo.event.extendedProps.calendar
+    ? `fc-bg-${eventInfo.event.extendedProps.calendar.toLowerCase()}`
+    : "fc-bg-primary";
   return (
     <div
       className={`event-fc-color flex fc-event-main ${colorClass} p-1 rounded-sm`}
