@@ -335,10 +335,10 @@ export default function HorariosPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={!pdfFile}
+                  disabled={!pdfFile || uploading}
                   className="px-4 py-2 bg-brand-500 text-white text-sm rounded-lg hover:bg-brand-600 disabled:opacity-50"
                 >
-                  Enviar
+                  {uploading ? "A enviar..." : "Enviar"}
                 </button>
               </div>
             </form>
