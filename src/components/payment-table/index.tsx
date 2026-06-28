@@ -274,7 +274,7 @@ export default function PaymentsTable() {
                                         {p.comprovativo ? (
                                             <a
 
-                                                href={getFileUrl(encodeURIComponent(p.comprovativo))}
+                                                href={getFileUrl(p.comprovativo) ?? "#"}
                                                 target="_blank"
                                                 className="text-blue-600 hover:text-blue-800"
                                                 title="View proof"
