@@ -55,8 +55,10 @@ export default function RegulamentosList() {
     setConfirmTarget(null);
     setDeletingId(reg.id);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regulamentos/${reg.id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regulamentos/${reg.id ?? "null"}`, {
         method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ file_url: reg.file_url }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
