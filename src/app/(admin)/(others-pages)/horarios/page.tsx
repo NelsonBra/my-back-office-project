@@ -4,6 +4,7 @@ import { getFileUrl } from '../../../../utils/fileUrl';
 import { useEffect, useState } from "react";
 import { useModal } from "@/hooks/useModal";
 import Select from "@/components/form/Select";
+import { toast } from "react-toastify";
 
 type Course = { id: number; nome: string; descricao?: string };
 
@@ -26,6 +27,8 @@ export default function HorariosPage() {
   const [formYear, setFormYear] = useState("");
   const [formSemester, setFormSemester] = useState("");
   const [formPdf, setFormPdf] = useState<File | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const { isOpen: isCreateOpen, openModal: openCreate, closeModal: closeCreate } = useModal();
   const { isOpen: isUploadOpen, openModal: openUpload, closeModal: closeUpload } = useModal();
@@ -63,45 +66,69 @@ export default function HorariosPage() {
     e.preventDefault();
     if (!formCourseId || !formYear || !formSemester) return;
 
-    const courseName = courses.find((c) => String(c.id) === formCourseId)?.nome ?? "";
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/class-schedules`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        course_id: formCourseId,
-        year: formYear,
-        semester: formSemester,
-        title: `${courseName} - ${formYear}º Ano - ${formSemester}º Sem.`,
-      }),
-    });
-
-    if (res.ok && formPdf) {
-      const { id } = await res.json();
-      const fd = new FormData();
-      fd.append("pdf", formPdf);
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/class-schedules/${id}/pdf`, {
+    setSaving(true);
+    try {
+      const courseName = courses.find((c) => String(c.id) === formCourseId)?.nome ?? "";
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/class-schedules`, {
         method: "POST",
-        body: fd,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          course_id: formCourseId,
+          year: formYear,
+          semester: formSemester,
+          title: `${courseName} - ${formYear}º Ano - ${formSemester}º Sem.`,
+        }),
       });
-    }
 
-    resetForm();
-    closeCreate();
-    fetchSchedules();
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Erro ${res.status} ao criar horário`);
+      }
+
+      const saved = await res.json();
+
+      if (formPdf) {
+        const fd = new FormData();
+        fd.append("pdf", formPdf);
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/class-schedules/${saved.id}/pdf`, {
+          method: "POST",
+          body: fd,
+        });
+      }
+
+      toast.success("Horário criado com sucesso!");
+      resetForm();
+      closeCreate();
+      fetchSchedules();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Erro ao criar horário");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleUploadPdf = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pdfFile || selectedScheduleId === null) return;
-    const fd = new FormData();
-    fd.append("pdf", pdfFile);
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/class-schedules/${selectedScheduleId}/pdf`, {
-      method: "POST",
-      body: fd,
-    });
-    setPdfFile(null);
-    closeUpload();
-    fetchSchedules();
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("pdf", pdfFile);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/class-schedules/${selectedScheduleId}/pdf`, {
+        method: "POST",
+        body: fd,
+      });
+      if (!res.ok) throw new Error("Erro ao fazer upload do PDF");
+      toast.success("PDF carregado com sucesso!");
+      setPdfFile(null);
+      closeUpload();
+      fetchSchedules();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao enviar PDF");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleRemovePdf = async (id: number) => {
@@ -275,10 +302,10 @@ export default function HorariosPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={!formCourseId || !formYear || !formSemester}
+                  disabled={!formCourseId || !formYear || !formSemester || saving}
                   className="px-4 py-2 bg-brand-500 text-white text-sm rounded-lg hover:bg-brand-600 disabled:opacity-50"
                 >
-                  Guardar
+                  {saving ? "A guardar..." : "Guardar"}
                 </button>
               </div>
             </form>
