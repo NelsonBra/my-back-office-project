@@ -137,10 +137,18 @@ export default function HorariosPage() {
     fetchSchedules();
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number | null) => {
+    if (!id) { toast.error("Este horário tem ID inválido na base de dados. Contacte o administrador da BD."); return; }
     if (!window.confirm("Tem a certeza que quer eliminar este horário?")) return;
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/class-schedules/${id}`, { method: "DELETE" });
-    fetchSchedules();
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/class-schedules/${id}`, { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || `Erro ${res.status}`);
+      toast.success("Horário eliminado com sucesso!");
+      fetchSchedules();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao eliminar horário");
+    }
   };
 
   const courseOptions = courses.map((c) => ({ value: String(c.id), label: `${c.nome} - ${(c.descricao ?? "").split(" ")[0]}`.trim().replace(/\s*-\s*$/, "") }));
