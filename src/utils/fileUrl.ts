@@ -2,7 +2,19 @@
 export const getFileUrl = (fileRef: string | null | undefined): string | null => {
     if (!fileRef) return null;
     if (fileRef.startsWith("http")) return fileRef; // Cloudinary or absolute URL
-    // Avoid duplicating the "uploads/" prefix if it's already in the stored path
-    const path = fileRef.startsWith("uploads/") ? fileRef : `uploads/${fileRef}`;
-    return `${process.env.NEXT_PUBLIC_API_URL}/${path}`;
+
+    // Decode in case the stored value has URL-encoded characters (e.g. "uploads%2Ffile.pdf")
+    let decoded: string;
+    try {
+        decoded = decodeURIComponent(fileRef);
+    } catch {
+        decoded = fileRef;
+    }
+
+    // Strip "uploads/" prefix if already present to avoid "/uploads/uploads/..."
+    const filename = decoded.startsWith("uploads/")
+        ? decoded.slice("uploads/".length)
+        : decoded;
+
+    return `${process.env.NEXT_PUBLIC_API_URL}/uploads/${filename}`;
 };
