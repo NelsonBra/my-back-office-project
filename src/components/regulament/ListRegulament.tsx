@@ -20,7 +20,7 @@ export default function RegulamentosList() {
   const [confirmTarget, setConfirmTarget] = useState<Regulamento | null>(null);
 
   useEffect(() => {
-    const fetchRegulamentos = async () => {
+    const load = async () => {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regulamentos`);
         const data = await res.json();
@@ -36,8 +36,18 @@ export default function RegulamentosList() {
         setLoading(false);
       }
     };
-    fetchRegulamentos();
+    load();
   }, []);
+
+  const fetchRegulamentos = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regulamentos`);
+      const data = await res.json();
+      if (res.ok) setRegulamentos(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleConfirmDelete = async () => {
     if (!confirmTarget) return;
@@ -48,14 +58,14 @@ export default function RegulamentosList() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regulamentos/${reg.id}`, {
         method: "DELETE",
       });
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Erro ao remover regulamento");
+        throw new Error(data.error || `Erro ${res.status} ao remover regulamento`);
       }
-      setRegulamentos((prev) => prev.filter((r) => r.id !== reg.id));
+      await fetchRegulamentos();
       toast.success("Regulamento removido com sucesso!");
     } catch (err: any) {
-      console.error(err);
+      console.error("Delete error:", err);
       toast.error(err.message || "Erro ao remover regulamento");
     } finally {
       setDeletingId(null);
