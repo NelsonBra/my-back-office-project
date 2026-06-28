@@ -45,8 +45,10 @@ const Calendar: React.FC = () => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const calendarRef = useRef<FullCalendar>(null);
   const { isOpen, openModal, closeModal } = useModal();
+  const { isOpen: isConfirmOpen, openModal: openConfirm, closeModal: closeConfirm } = useModal();
   const [eventDescription, setEventDescription] = useState("");
   const [eventPdf, setEventPdf] = useState<File | null>(null);
+  const [cancelling, setCancelling] = useState(false);
 
 
 
@@ -200,37 +202,26 @@ const Calendar: React.FC = () => {
 
   const handleCancelEvent = async () => {
     if (!selectedEvent) return;
-
-    const confirmDelete = window.confirm(
-      "Tem certeza que deseja cancelar este evento?"
-    );
-
-    if (!confirmDelete) return;
-
+    setCancelling(true);
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/calendar-events/${selectedEvent.id}`,
-        {
-          method: "DELETE",
-        }
+        { method: "DELETE" }
       );
-
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.message || "Erro ao cancelar evento");
       }
-
-
-      setEvents((prev) =>
-        prev.filter((event) => event.id !== selectedEvent.id)
-      );
-
+      setEvents((prev) => prev.filter((event) => event.id !== selectedEvent.id));
+      closeConfirm();
       closeModal();
       resetModalFields();
       toast.success("Evento cancelado com sucesso!");
     } catch (err: any) {
       console.error(err);
       toast.error("Erro ao cancelar evento: " + err.message);
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -478,7 +469,7 @@ const Calendar: React.FC = () => {
 
             {selectedEvent?.extendedProps?.status === 1 && (
               <button
-                onClick={handleCancelEvent}
+                onClick={openConfirm}
                 type="button"
                 className="flex w-full justify-center rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 sm:w-auto"
               >
@@ -497,6 +488,41 @@ const Calendar: React.FC = () => {
             )}
           </div>
 
+        </div>
+      </Modal>
+
+      {/* Confirm cancel modal */}
+      <Modal isOpen={isConfirmOpen} onClose={closeConfirm} className="max-w-md w-full">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6">
+          <div className="flex items-center justify-center w-14 h-14 rounded-full bg-red-100 dark:bg-red-500/10 mx-auto mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white text-center mb-2">
+            Cancelar Evento
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-1">
+            Tem a certeza que deseja cancelar o evento:
+          </p>
+          <p className="text-sm font-medium text-gray-800 dark:text-white text-center mb-6 truncate px-4">
+            "{selectedEvent?.title}"
+          </p>
+          <p className="text-xs text-gray-400 text-center mb-6">Esta acção é irreversível.</p>
+          <div className="flex gap-3">
+            <button
+              onClick={closeConfirm}
+              disabled={cancelling}
+              className="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+            >
+              Voltar
+            </button>
+            <button
+              onClick={handleCancelEvent}
+              disabled={cancelling}
+              className="flex-1 px-4 py-2.5 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-600 active:bg-red-700 transition-colors disabled:opacity-50"
+            >
+              {cancelling ? "A cancelar..." : "Sim, cancelar"}
+            </button>
+          </div>
         </div>
       </Modal>
     </div>

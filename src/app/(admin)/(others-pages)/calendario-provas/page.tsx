@@ -4,6 +4,9 @@ import { getFileUrl } from '../../../../utils/fileUrl';
 import { useEffect, useState } from "react";
 import { useModal } from "@/hooks/useModal";
 import Select from "@/components/form/Select";
+import { AlertTriangle } from "lucide-react";
+import { Modal } from "@/components/ui/modal";
+import { toast } from "react-toastify";
 
 type Course = { id: number; nome: string; descricao?: string };
 
@@ -27,6 +30,8 @@ export default function CalendarioProvasPage() {
   const [formYear, setFormYear] = useState("");
   const [formSemester, setFormSemester] = useState("");
   const [formPdf, setFormPdf] = useState<File | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<CalendarEvent | null>(null);
+  const [cancelling, setCancelling] = useState(false);
 
   const { isOpen: isCreateOpen, openModal: openCreate, closeModal: closeCreate } = useModal();
   const { isOpen: isUploadOpen, openModal: openUpload, closeModal: closeUpload } = useModal();
@@ -122,10 +127,20 @@ export default function CalendarioProvasPage() {
     fetchEvents();
   };
 
-  const handleCancel = async (id: number) => {
-    if (!window.confirm("Tem a certeza que quer cancelar este evento?")) return;
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/calendar-events/${id}`, { method: "DELETE" });
-    fetchEvents();
+  const handleConfirmCancel = async () => {
+    if (!cancelTarget) return;
+    setCancelling(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/calendar-events/${cancelTarget.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Erro ao cancelar evento");
+      toast.success("Evento cancelado com sucesso!");
+      setCancelTarget(null);
+      fetchEvents();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao cancelar evento");
+    } finally {
+      setCancelling(false);
+    }
   };
 
   const courseOptions = courses.map((c) => ({ value: String(c.id), label: `${c.nome} - ${(c.descricao ?? "").split(" ")[0]}`.trim().replace(/\s*-\s*$/, "") }));
@@ -244,7 +259,7 @@ export default function CalendarioProvasPage() {
                       </button>
                     )}
                     <button
-                      onClick={() => handleCancel(ev.id)}
+                      onClick={() => setCancelTarget(ev)}
                       className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100"
                     >
                       Cancelar
@@ -348,6 +363,53 @@ export default function CalendarioProvasPage() {
           </div>
         </div>
       )}
+
+      {/* Confirm Cancel Modal */}
+      <Modal
+        isOpen={!!cancelTarget}
+        onClose={() => setCancelTarget(null)}
+        className="max-w-md w-full"
+      >
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6">
+          <div className="flex items-center justify-center w-14 h-14 rounded-full bg-red-100 dark:bg-red-500/10 mx-auto mb-4">
+            <AlertTriangle size={28} className="text-red-500" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white text-center mb-2">
+            Cancelar Calendário de Provas
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-1">
+            Tem a certeza que deseja cancelar o calendário de:
+          </p>
+          <p className="text-sm font-medium text-gray-800 dark:text-white text-center mb-2 px-4">
+            {cancelTarget ? courseName(cancelTarget.courseId) : ""}
+          </p>
+          {cancelTarget && (
+            <p className="text-xs text-gray-400 text-center mb-4">
+              {cancelTarget.year ? `${cancelTarget.year}º Ano` : "—"}
+              {cancelTarget.semester ? ` · ${cancelTarget.semester}º Semestre` : ""}
+            </p>
+          )}
+          <p className="text-xs text-gray-400 text-center mb-6">Esta acção é irreversível.</p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setCancelTarget(null)}
+              disabled={cancelling}
+              className="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300
+                hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+            >
+              Voltar
+            </button>
+            <button
+              onClick={handleConfirmCancel}
+              disabled={cancelling}
+              className="flex-1 px-4 py-2.5 rounded-lg bg-red-500 text-white text-sm font-medium
+                hover:bg-red-600 active:bg-red-700 transition-colors disabled:opacity-50"
+            >
+              {cancelling ? "A cancelar..." : "Sim, cancelar"}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
