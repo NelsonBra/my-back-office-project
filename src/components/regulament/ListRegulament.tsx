@@ -109,13 +109,13 @@ export default function RegulamentosList() {
 
                 <button
                   onClick={() => handleDelete(reg)}
-                  disabled={deletingId === reg.id}
+                  disabled={deletingId !== null && deletingId === reg.id}
                   className="flex items-center gap-1 text-red-500 hover:text-red-700 dark:hover:text-red-400 font-medium text-sm
                     disabled:opacity-50 disabled:cursor-not-allowed transition-colors px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10"
                   title="Remover regulamento"
                 >
                   <Trash2 size={16} />
-                  {deletingId === reg.id ? "A remover..." : "Remover"}
+                  {deletingId !== null && deletingId === reg.id ? "A remover..." : "Remover"}
                 </button>
               </div>
             </div>
