@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { useModal } from "@/hooks/useModal";
 import Select from "@/components/form/Select";
 import { toast } from "react-toastify";
+import { AlertTriangle } from "lucide-react";
+import { Modal } from "@/components/ui/modal";
 
 type Course = { id: number; nome: string; descricao?: string };
 
@@ -29,6 +31,8 @@ export default function HorariosPage() {
   const [formPdf, setFormPdf] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Schedule | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const { isOpen: isCreateOpen, openModal: openCreate, closeModal: closeCreate } = useModal();
   const { isOpen: isUploadOpen, openModal: openUpload, closeModal: closeUpload } = useModal();
@@ -137,17 +141,20 @@ export default function HorariosPage() {
     fetchSchedules();
   };
 
-  const handleDelete = async (id: number | null) => {
-    if (!id) { toast.error("Este horário tem ID inválido na base de dados. Contacte o administrador da BD."); return; }
-    if (!window.confirm("Tem a certeza que quer eliminar este horário?")) return;
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/class-schedules/${id}`, { method: "DELETE" });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/class-schedules/${deleteTarget.id}`, { method: "DELETE" });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || `Erro ${res.status}`);
       toast.success("Horário eliminado com sucesso!");
+      setDeleteTarget(null);
       fetchSchedules();
     } catch (err: any) {
       toast.error(err.message || "Erro ao eliminar horário");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -250,7 +257,7 @@ export default function HorariosPage() {
                       </button>
                     )}
                     <button
-                      onClick={() => handleDelete(s.id)}
+                      onClick={() => setDeleteTarget(s)}
                       className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100"
                     >
                       Eliminar
@@ -354,6 +361,52 @@ export default function HorariosPage() {
           </div>
         </div>
       )}
+
+      {/* Confirm Delete Modal */}
+      <Modal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        className="max-w-md w-full"
+      >
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6">
+          <div className="flex items-center justify-center w-14 h-14 rounded-full bg-red-100 dark:bg-red-500/10 mx-auto mb-4">
+            <AlertTriangle size={28} className="text-red-500" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white text-center mb-2">
+            Eliminar Horário
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-1">
+            Tem a certeza que deseja eliminar o horário de:
+          </p>
+          <p className="text-sm font-medium text-gray-800 dark:text-white text-center mb-2 px-4">
+            {deleteTarget ? courseName(deleteTarget.courseId) : ""}
+          </p>
+          {deleteTarget && (
+            <p className="text-xs text-gray-400 text-center mb-4">
+              {deleteTarget.year}º Ano · {deleteTarget.semester ? `${deleteTarget.semester}º Semestre` : "—"}
+            </p>
+          )}
+          <p className="text-xs text-gray-400 text-center mb-6">Esta acção é irreversível.</p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setDeleteTarget(null)}
+              disabled={deleting}
+              className="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300
+                hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleConfirmDelete}
+              disabled={deleting}
+              className="flex-1 px-4 py-2.5 rounded-lg bg-red-500 text-white text-sm font-medium
+                hover:bg-red-600 active:bg-red-700 transition-colors disabled:opacity-50"
+            >
+              {deleting ? "A eliminar..." : "Sim, eliminar"}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
