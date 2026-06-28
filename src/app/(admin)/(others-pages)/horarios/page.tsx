@@ -110,7 +110,8 @@ export default function HorariosPage() {
 
   const handleUploadPdf = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!pdfFile || selectedScheduleId === null) return;
+    if (!pdfFile) { toast.error("Selecione um ficheiro PDF"); return; }
+    if (selectedScheduleId == null || selectedScheduleId === 0) { toast.error("ID do horário inválido — elimine e crie de novo"); return; }
     setUploading(true);
     try {
       const fd = new FormData();
@@ -335,7 +336,7 @@ export default function HorariosPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={!pdfFile || uploading}
+                  disabled={uploading}
                   className="px-4 py-2 bg-brand-500 text-white text-sm rounded-lg hover:bg-brand-600 disabled:opacity-50"
                 >
                   {uploading ? "A enviar..." : "Enviar"}
